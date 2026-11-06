@@ -125,3 +125,32 @@ body.access-open{background:#f6f7f2}body.access-open .app-shell,body.access-open
 @media(min-width:1000px){.admin-coach-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-coach-card{padding:21px}.admin-coach-card>.row{align-items:flex-start;flex-wrap:wrap}.admin-coach-card .person{min-width:175px}}
 @media(max-width:900px){.admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){body[data-role=admin] #mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr))}body[data-role=admin] #topbar{padding-top:env(safe-area-inset-top,0px);height:calc(76px + env(safe-area-inset-top,0px));gap:8px}body[data-role=admin] .role-field{display:none}body[data-role=admin] .top-actions{gap:9px}body[data-role=admin] .admin-profile-name{display:none}body[data-role=admin] .mobile-brand .brand-logo{width:135px;height:auto}body[data-role=admin] .page-head{align-items:flex-start;flex-wrap:wrap}body[data-role=admin] .page-head>div{min-width:0}body[data-role=admin] .page-head h1{font-size:27px}.admin-stat-grid{gap:12px}.admin-stat-grid .stat{padding:17px}.admin-stat-grid .stat-value{font-size:25px}.admin-stat-grid .stat-top{font-size:11px;gap:8px}.admin-stat-grid .stat-top svg{flex-shrink:0}.admin-overview-hero{padding:25px 23px}.admin-overview-hero h2{font-size:25px}.admin-overview-hero .btns{flex-wrap:wrap}.admin-overview-hero .hero-art{display:none}.admin-overview-hero .btn{font-size:11px}.admin-overview-hero p{margin-bottom:18px}.admin-coach-grid{grid-template-columns:minmax(0,1fr);gap:14px}.admin-coach-card{padding:21px}.admin-coach-card>.row{align-items:flex-start;flex-wrap:wrap}.admin-coach-card .person{min-width:170px}.admin-filters{grid-template-columns:1fr 1fr;padding:16px;gap:12px}.admin-filters>div:first-child{grid-column:1/-1}.admin-filters :is(input,select){font-size:16px;padding:12px 10px}.admin-billing-tools{gap:12px;flex-wrap:wrap}.admin-billing-tools>div{max-width:none;flex:1}.admin-billing-tools input{font-size:16px;min-width:0;max-width:100%}.admin-message-banner{padding:20px;align-items:flex-start}.admin-message-banner strong{font-size:14px}.admin-message-banner p{font-size:12px}.admin-local-note{font-size:10px}.admin-payments-table,.admin-payments-table tbody{display:block}.admin-payments-table thead{display:none}.admin-payments-table tr{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);padding:16px;gap:13px}.admin-payments-table td{border:0;padding:0;text-align:left;font-size:12px;min-width:0;overflow-wrap:anywhere}.admin-payments-table td:nth-child(3){grid-column:1/-1}.admin-payments-table td::before{display:block;font-size:9px;color:var(--muted);margin-bottom:7px;letter-spacing:.7px}.admin-payments-table td:nth-child(1)::before{content:'FECHA / MEDIO'}.admin-payments-table td:nth-child(2)::before{content:'PROFESOR / PLAN'}.admin-payments-table td:nth-child(3)::before{content:'PERÍODO'}.admin-payments-table td:nth-child(4)::before{content:'IMPORTE'}.admin-payments-table td:last-child{align-self:end;text-align:right}.modal-content form[id^=admin-] .form-grid{grid-template-columns:1fr}.admin-summary-lines>p{font-size:12px}.admin-due-row .btn{flex-shrink:0}}
+
+/* 1.6.1 · Administrative layout and iOS billing period */
+body[data-role=admin] .page-footer>span:first-child{display:none}
+.admin-billing-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:16px}
+.admin-billing-tools>.admin-period{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr);gap:12px;max-width:400px;width:100%;min-width:0}
+.admin-period>div{min-width:0}
+.admin-period select{display:block;width:100%;min-width:0;max-width:100%;font-size:16px}
+.admin-billing-tools>.btn{min-width:0;max-width:100%;margin:0}
+body[data-role=admin] .stat{min-width:0}
+body[data-role=admin] .stat-value{overflow-wrap:anywhere}
+@media(max-width:700px){
+ .admin-billing-tools{grid-template-columns:minmax(0,1fr);gap:12px;margin-bottom:20px}
+ .admin-billing-tools>.admin-period{max-width:none;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
+ .admin-billing-tools>.btn{width:100%;min-height:44px}
+ .admin-billing-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .admin-billing-stats>.stat:first-child{grid-column:1/-1}
+ .admin-billing-stats .stat{padding:17px}
+ .admin-billing-stats .stat-top{font-size:11px;align-items:flex-start;gap:8px;margin-bottom:12px}
+ .admin-billing-stats .stat-top svg{flex-shrink:0}
+ .admin-billing-stats .stat-value{font-size:25px;line-height:1.25}
+ .admin-billing-stats>.stat:first-child .stat-value{font-size:30px}
+ .admin-billing-stats .stat-detail{font-size:10px;line-height:1.6}
+ body[data-role=admin] .panel .empty{padding:25px 18px}
+ body[data-role=admin] .panel .empty h3{font-size:16px;line-height:1.5}
+ body[data-role=admin] .panel .empty p{font-size:12px;line-height:1.7}
+ body[data-role=admin] .page-head{margin-bottom:22px;gap:14px}
+ body[data-role=admin] .page-head .eyebrow{font-size:9px}
+}
+@media(max-width:360px){.admin-billing-stats{grid-template-columns:minmax(0,1fr)}.admin-billing-stats>.stat:first-child{grid-column:auto}}

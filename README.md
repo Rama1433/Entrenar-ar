@@ -1,4 +1,4 @@
-# Entrenar · V1.6.0
+# Entrenar · V1.6.1
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -163,3 +163,13 @@ No se conectó ninguna base ni se aprovisionó un servicio. El selector de roles
 ### Publicación
 
 Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo admin.js, además de qr.js. La caché PWA se incrementa a 1.6.0. El paquete conserva el logo, la bienvenida animada y el circuito anterior de profesor/alumno.
+
+
+## Corrección 1.6.1 · Administración simple y Facturación en celular
+
+- Inicio del administrador sin bloque verde motivacional, sin saludo protagonista ni eslogan lateral/pie. Muestra Resumen, métricas de profesores y pagos, próximos vencimientos y estado de profesores. Se mantienen profesores, planes/precios, facturación, comunicados y ajustes.
+- Facturación reemplaza el input month de iOS por dos selectores Mes/Año con etiquetas. Incluye años cercanos al actual y todos los años con pagos históricos. Conserva el mismo filtrado por fecha de pago.
+- En celular, el botón Planes y precios ocupa su propia fila debajo de los selectores. El importe registrado ocupa el ancho completo; las otras métricas se acomodan debajo, y en pantallas muy pequeñas pasan a una columna. Se reduce el espacio y el texto de estados vacíos.
+- No se modifican alumnos, profesores, importes, períodos ni pagos históricos. Las vistas de profesor/alumno mantienen sus frases.
+- Pruebas de administración anteriores y nuevas pasaron: inicio sin hero, controles Mes/Año y aplicación del período elegido. La revisión visual en Safari/PWA instalada sigue pendiente; este ajuste elimina el control nativo que causaba la superposición reportada.
+- Publicar todos los archivos del ZIP. Versión/caché 1.6.1.
