@@ -1,4 +1,4 @@
-# Entrenar · V1.4.0
+# Entrenar · V1.4.1
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -99,3 +99,13 @@ El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y ce
 - No se modificó el formato ni la clave del guardado local existente.
 - Próximo paso: conectar autenticación y base de datos, verificar correo, guardar perfiles, verificar roles en servidor, generar invitaciones seguras con vencimiento y QR, aprobar vinculaciones y habilitar sesiones/recuperación. La interfaz actual no protege datos ni rutas y no debe usarse con datos reales.
 - Para publicar esta actualización, subir todos los archivos del ZIP a la raíz del repositorio, incluido access.js. La caché PWA se incrementa a 1.4.0.
+
+
+## Ajuste 1.4.1 · Bienvenida móvil y planes
+
+- Bienvenida de celular con bloque verde, espacios compactos y pie cercano al contenido. Se conserva la composición de bienvenida de PC.
+- Todas las pantallas de acceso respetan safe-area-inset-top/bottom/left/right en iPhone PWA con viewport-fit=cover. La barra de estado queda fuera del contenido. Validación visual en navegador a 320 y 390 px; queda pendiente la comprobación en iPhone instalado real.
+- Al elegir Soy profesor aparece un comparador de planes con cupo, descripción, las cuatro funciones actuales y abono mensual. Tres columnas en PC y tarjetas apiladas en celular. El plan seleccionado se resalta en verde; la elección mantiene foco y posición de desplazamiento y se conserva al continuar/volver.
+- El agregado diferencial del plan Profesional de 30 alumnos queda pendiente de definición. No se anuncian funciones nuevas ni se fijan precios.
+- Actualización visual de la demo. Registro real y cobros continúan pendientes. No se modifica el guardado de alumnos, rutinas, medidas ni historial.
+- Subir el contenido completo del ZIP al repositorio, en particular access.js, styles.css, app.js, index.html y sw.js. Caché incrementada a 1.4.1.
