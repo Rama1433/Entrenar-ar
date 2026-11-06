@@ -1,4 +1,4 @@
-# Entrenar · V1.6.1
+# Entrenar · V1.6.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -173,3 +173,14 @@ Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo ad
 - No se modifican alumnos, profesores, importes, períodos ni pagos históricos. Las vistas de profesor/alumno mantienen sus frases.
 - Pruebas de administración anteriores y nuevas pasaron: inicio sin hero, controles Mes/Año y aplicación del período elegido. La revisión visual en Safari/PWA instalada sigue pendiente; este ajuste elimina el control nativo que causaba la superposición reportada.
 - Publicar todos los archivos del ZIP. Versión/caché 1.6.1.
+
+
+## Ajuste 1.6.2 · Tarjetas como accesos y entrada más perceptible
+
+- Métricas del profesor como botones accesibles: alumnos activos abre Alumnos con filtro activo, rutinas abre Rutinas, sesiones semanales lleva a Alumnos para consultar sus fichas e historial. Limpia búsquedas previas al entrar desde el acceso.
+- Métricas del resumen administrativo: activos, en prueba y vencidos abren Profesores con el filtro correspondiente; pagos del mes abre Facturación en el mes actual y su historial. Las filas de totales, suspendidos y sin vencimiento también abren sus filtros.
+- En Facturación: pagos abre el historial del período elegido; profesores que pagaron muestra ese grupo del mes; abonos previstos abre Planes y precios.
+- Se amplía el área del botón Ver ficha a toda la tarjeta del profesor/alumno; mantiene un único botón accesible, sin controles anidados. Efecto visual de foco/hover en tarjetas.
+- Animación de bienvenida pasa de 700 a 1200 ms, con entrada escalonada y desplazamiento suave de 20 px. Sigue una vez por apertura y sin bloquear botones. Se conserva prefers-reduced-motion y no se repite al volver.
+- Pruebas anteriores pasaron, además de destinos y filtros de tarjetas y navegación del profesor. La percepción visual final en dispositivos sigue pendiente de revisión.
+- Subir todos los archivos. Versión/caché 1.6.2. No modifica datos, pagos ni historial.

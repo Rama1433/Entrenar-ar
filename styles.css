@@ -76,15 +76,15 @@ body.access-open{background:#f6f7f2}body.access-open .app-shell,body.access-open
 
 /* 1.4.2 · Welcome entrance and full-height mobile composition */
 .access-note-mobile{display:none}
-@keyframes access-reveal{from{opacity:.2;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes access-logo-reveal{from{opacity:.2}to{opacity:1}}
+@keyframes access-reveal{from{opacity:.08;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes access-logo-reveal{from{opacity:.08}to{opacity:1}}
 @keyframes access-symbol-arrive{from{transform:translateX(8px) rotate(-10deg)}to{transform:translateX(0) rotate(-15deg)}}
-.access-enter :is(.access-brand,.access-mobile-brand){animation:access-logo-reveal 360ms ease-out both}
-.access-enter .access-welcome-hero{animation:access-reveal 440ms cubic-bezier(.2,.7,.2,1) 70ms both}
-.access-enter .access-choice:first-child{animation:access-reveal 380ms cubic-bezier(.2,.7,.2,1) 150ms both}
-.access-enter .access-choice:last-child{animation:access-reveal 380ms cubic-bezier(.2,.7,.2,1) 230ms both}
-.access-enter :is(.access-welcome-actions,.access-note){animation:access-reveal 360ms ease-out 340ms both}
-.access-enter .access-welcome-mark{animation:access-symbol-arrive 560ms ease-out 100ms both}
+.access-enter :is(.access-brand,.access-mobile-brand){animation:access-logo-reveal 600ms ease-out both}
+.access-enter .access-welcome-hero{animation:access-reveal 680ms cubic-bezier(.2,.7,.2,1) 100ms both}
+.access-enter .access-choice:first-child{animation:access-reveal 620ms cubic-bezier(.2,.7,.2,1) 280ms both}
+.access-enter .access-choice:last-child{animation:access-reveal 620ms cubic-bezier(.2,.7,.2,1) 410ms both}
+.access-enter :is(.access-welcome-actions,.access-note){animation:access-reveal 550ms ease-out 650ms both}
+.access-enter .access-welcome-mark{animation:access-symbol-arrive 850ms ease-out 180ms both}
 @media(max-width:700px){
  .access-screen-welcome .access-panel{min-height:100dvh}
  .access-screen-welcome .access-content{flex:1;display:flex;flex-direction:column;gap:clamp(18px,2.7dvh,28px);margin:20px auto 0}
@@ -154,3 +154,8 @@ body[data-role=admin] .stat-value{overflow-wrap:anywhere}
  body[data-role=admin] .page-head .eyebrow{font-size:9px}
 }
 @media(max-width:360px){.admin-billing-stats{grid-template-columns:minmax(0,1fr)}.admin-billing-stats>.stat:first-child{grid-column:auto}}
+
+
+/* 1.6.2 · Summary shortcuts */
+.stat-value,.stat-detail{display:block}.stat-link{display:block;text-align:left;width:100%;color:inherit;cursor:pointer;transition:border-color .18s,box-shadow .18s;background:#fff}.stat-link:hover{border-color:#9db47b;box-shadow:0 3px 13px #173b2b0c}.stat-link:focus-visible{outline:3px solid #86a85b;outline-offset:3px}.stat-link:active{background:#f1f5eb}.stat-link .stat-detail::after{content:' →';color:#6b8b4c}.admin-summary-link{display:flex;justify-content:space-between;align-items:baseline;gap:15px;min-height:44px;border-bottom:1px solid #eef1e9;background:none;padding:0 0 12px;text-align:left;font-size:12px;line-height:1.7;color:var(--muted);width:100%}.admin-summary-link strong{color:#21372c;font-weight:600;text-align:right}.admin-summary-link:hover{color:#355c35}.admin-coach-card,.student-card{position:relative}.admin-coach-card>.btn[data-admin-action=detail]::after,.student-card>.btn[data-action=student-detail]::after{content:'';position:absolute;inset:0;border-radius:17px}.admin-coach-card:focus-within,.student-card:focus-within{outline:2px solid #86a85b;outline-offset:3px}#admin-payment-history{scroll-margin-top:18px}
+@media(prefers-reduced-motion:reduce){.stat-link{transition:none}}
