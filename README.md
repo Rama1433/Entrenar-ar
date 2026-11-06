@@ -1,4 +1,4 @@
-# Entrenar · V1.7.1
+# Entrenar · V1.7.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -202,3 +202,11 @@ Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo ad
 Entrar a una demo establece su Inicio/Resumen como raíz independiente. Las pantallas de acceso quedan fuera de ese recorrido; volver atrás no restaura el selector de Alumno/Profesor. Cambiar de rol o alumno y usar explícitamente Volver al acceso también separa el historial anterior. Se cancela cualquier gesto en curso al recibir un popstate para evitar un segundo disparo desde el mismo deslizamiento. El gesto no actúa en la raíz.
 
 Pruebas de regresión para profesor, alumno y administrador: navegar y volver al inicio, intentar un retroceso adicional sin reaparecer el acceso ni cambiar de rol. Pruebas anteriores de navegación y administración pasaron. Falta comprobación física en iPhone. Versión/caché 1.7.1; publicar todo el ZIP, incluido navigation.js.
+
+
+## Corrección 1.7.2 · Revisión de todos los roles
+
+- Se guarda la raíz del rol actual y se comprueba que cada entrada de historial pertenezca al mismo rol/alumno y recorrido. Si un retroceso nativo de varias entradas cruza hacia el acceso u otra demo, se restaura Inicio del profesor/alumno o Resumen del administrador, sin volver al selector de roles.
+- Recorridos completos probados: profesor (Alumnos, ficha, Rutinas, Perfil), alumno (Mi rutina, entrenamiento, Progreso, Perfil), administrador (Profesores, ficha, Facturación, Planes, Comunicados). Se verifica cada paso hacia atrás y un salto directo a una entrada de acceso anterior desde una pantalla interna.
+- Todas las pruebas de navegación y administración anteriores pasan. No modifica cuentas ni datos. La comprobación física con el gesto de iPhone continúa pendiente.
+- Subir todo el ZIP y cerrar/reabrir la PWA para tomar 1.7.2. No borrar almacenamiento ni datos locales.

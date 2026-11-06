@@ -3,7 +3,7 @@
 (() => {
  if(!window.history?.pushState)return;
  const history=window.history;
- let restoring=false,depth=0,current=null,gesture=null;
+ let restoring=false,depth=0,current=null,gesture=null,appRoot=null;
  let token=id();
  const rootKey='entrenarNavigation';
  const baseRender=render,baseNavigate=navigate;
@@ -22,9 +22,9 @@
  function commit(){
   if(restoring)return;
   const view=snapshot();
-  if(!current){depth=0;write(view,true);return;}
+  if(!current){depth=0;if(view.mode==='app')appRoot={...view,page:view.role==='admin'?'Resumen':'Inicio',detailId:null,search:'',filter:'all',scroll:0};write(view,true);return;}
   // Access and each demo account have separate history boundaries.
-  if(view.mode!==current.mode||(view.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId))){token=id();depth=0;gesture=null;view.scroll=0;write(view,true);return;}
+  if(view.mode!==current.mode||(view.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId))){token=id();depth=0;gesture=null;view.scroll=0;appRoot=view.mode==='app'?{...view,page:view.role==='admin'?'Resumen':'Inicio',detailId:null,search:'',filter:'all',scroll:0}:null;write(view,true);return;}
   const changed=routeKey(view)!==routeKey(current);
   if(changed){depth++;view.scroll=0;write(view,false);}else write(view,true);
  }
@@ -35,8 +35,11 @@
  document.addEventListener('click',e=>{if(e.target.closest('[data-access-back]')&&depth>0){e.preventDefault();e.stopImmediatePropagation();history.back();return;}if(e.target.closest('[data-access]'))remember();},true);
  window.addEventListener('popstate',e=>{
   gesture=null;
-  const entry=e.state?.[rootKey];
-  if(!entry||entry.token!==token||!entry.view)return;
+  let entry=e.state?.[rootKey];
+  if(!entry||!entry.view)return;
+  const matches=entry.token===token&&entry.view.mode===current?.mode&&(current.mode!=='app'||entry.view.role===current.role&&entry.view.studentId===current.studentId);
+  const crossedBoundary=!matches;
+  if(crossedBoundary){if(current?.mode!=='app'||!appRoot)return;entry={token,depth:0,view:appRoot};}
   restoring=true;
   try{
    if(modal.open)modal.close();
@@ -57,6 +60,7 @@
     main.focus({preventScroll:true});
    }
    window.scrollTo({top:Number.isFinite(v.scroll)?v.scroll:0,behavior:'instant'});
+   if(crossedBoundary)write(v,true);
   }finally{restoring=false;}
  });
  // Safari uses native browser history. Installed iOS PWAs get an edge gesture.
