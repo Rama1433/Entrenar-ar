@@ -1,4 +1,4 @@
-# Entrenar · V1.1
+# Entrenar · V1.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -49,3 +49,13 @@ Archivos principales: index.html, styles.css, app.js, manifest.webmanifest, sw.j
 - Selector de varios días de lunes a sábado. Si una rutina anterior tenía otro día, el formulario lo conserva como opción adicional para no perderlo.
 - Frases diarias originales para profesor y alumno; dependen de la fecha local del dispositivo y no cambian al navegar o recargar.
 - Se conservan el guardado local y la compatibilidad con copias de V1. Aún no se conectaron cuentas ni base de datos.
+
+## Actualización 1.2
+
+- Logo de Entrenar incluido como archivo SVG y en la caché de la PWA; visible en menú lateral de PC y cabecera de celular.
+- Profesor en móvil: Inicio, Alumnos, Rutinas y Ejercicios. El nombre/avatar abre Perfil, reemplazando Más.
+- Perfil: datos editables (nombre, correo y WhatsApp), plan actual, cupos y acceso a planes. El estado y vencimiento siguen siendo de prueba, sin cobros.
+- Avisos para alumnos desde el perfil, con revisión y confirmación antes de publicar.
+- La campanita del profesor muestra exclusivamente comunicados del administrador, con indicador de no leídos. Administrador tiene sección Comunicados. La del alumno muestra los avisos de su profesor.
+- Son mensajes dentro de esta demostración local. No son push, WhatsApp ni correo; la entrega entre dispositivos requerirá conectar la base.
+- Copias y registros anteriores compatibles; los campos nuevos se agregan al cargar, sin borrar historial.
