@@ -1,4 +1,4 @@
-# Entrenar · V1.3
+# Entrenar · V1.3.1
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -76,3 +76,7 @@ Favicon integrado en index.html: símbolo de Entrenar en verde y lima para la pe
 - Rutinas con días, vista previa de ejercicios y avance guardado. Pantalla de entrenamiento con tarjetas, indicaciones, último registro real, descanso y completar cada ejercicio.
 - Progreso con peso y altura opcionales, fecha e historial editable. Un registro por día; los registros quedan asociados al alumno. Sin IMC, valoraciones médicas ni objetivos automáticos de peso. Esta demo no comparte medidas con el profesor.
 - Guardado de datos anteriores compatible. No hay conexión a relojes, HealthKit ni Health Connect. No se solicitan permisos de sensores. No hay sincronización entre dispositivos.
+
+## Corrección 1.3.1
+
+El formulario de peso y altura limita el ancho intrínseco del selector de fecha de iOS, mantiene los campos en una columna en celular, compacta espacios y permite desplazar verticalmente el modal. No cambia registros ni cálculos. La integración de relojes sigue pospuesta.
