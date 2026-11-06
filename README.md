@@ -1,4 +1,4 @@
-# Entrenar · V1.7.2
+# Entrenar · V1.8.0
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -210,3 +210,16 @@ Pruebas de regresión para profesor, alumno y administrador: navegar y volver al
 - Recorridos completos probados: profesor (Alumnos, ficha, Rutinas, Perfil), alumno (Mi rutina, entrenamiento, Progreso, Perfil), administrador (Profesores, ficha, Facturación, Planes, Comunicados). Se verifica cada paso hacia atrás y un salto directo a una entrada de acceso anterior desde una pantalla interna.
 - Todas las pruebas de navegación y administración anteriores pasan. No modifica cuentas ni datos. La comprobación física con el gesto de iPhone continúa pendiente.
 - Subir todo el ZIP y cerrar/reabrir la PWA para tomar 1.7.2. No borrar almacenamiento ni datos locales.
+
+
+## Corrección 1.8.0 · Recarga, recuperación y navegación real verificada
+
+Hallazgo reproducido en navegador: en la versión publicada 1.7.2, entrar como alumno, abrir Mi rutina y recargar devuelve a la bienvenida porque la demo no conservaba el rol abierto. En ese navegador Atrás sin recargar sí funcionó. No se reprodujo el gesto físico de iPhone, por lo que no se afirma que esa sea su causa exclusiva.
+
+- Cada pantalla de la demo ahora tiene una URL con fragmento propio (#/profesor/..., #/alumno/..., #/administrador/...). Sigue sin requerir reescrituras de Vercel.
+- El rol y la vista de demostración se guardan en sessionStorage durante esa apertura, sin contraseñas ni contenidos de formularios. Se recuperan al recargar y al restaurar desde la caché de páginas del navegador si reapareciera la bienvenida. Esto no es una sesión autenticada ni autorización.
+- Volver al acceso borra la navegación de la demo explícitamente. El enlace de invitación sigue teniendo prioridad cuando se abre como invitación; al entrar en la demo se consume el parámetro de invitación para que no se repita al recargar.
+- Recursos JS/CSS versionados con ?v=1.8.0. El fallback offline de caché admite esos parámetros. El almacenamiento de alumnos y pagos no se borra.
+- Verificación REAL en navegador de escritorio sobre la nueva vista local: profesor → Alumnos → recargar → Atrás mantiene profesor e Inicio; alumno → Mi rutina → recargar → Atrás mantiene alumno e Inicio; administrador → Facturación → recargar → Atrás mantiene administrador y Resumen. La versión pública se inspeccionó, no se modificó ni desplegó desde estas pruebas.
+- Pruebas de lógica anteriores completas, más recuperación de página (pageshow persisted) y limpieza de sesión al salir. Gesto físico y caché instalada de iPhone todavía requieren comprobación en el dispositivo.
+- Publicar TODO el contenido del ZIP y comprobar V1.8.0 en el pie de la demo. No borrar datos locales. Versión/caché 1.8.0.

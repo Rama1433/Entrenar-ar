@@ -6,6 +6,12 @@
  let restoring=false,depth=0,current=null,gesture=null,appRoot=null;
  let token=id();
  const rootKey='entrenarNavigation';
+ const sessionKey='entrenar-demo-navigation';
+ let initialAccess=true;
+ function loadDemo(){try{const v=JSON.parse(sessionStorage.getItem(sessionKey)||'null');return v?.mode==='app'&&['coach','student','admin'].includes(v.role)&&typeof v.page==='string'?v:null;}catch{return null;}}
+ function storeDemo(v){try{if(v.mode==='app')sessionStorage.setItem(sessionKey,JSON.stringify(v));else sessionStorage.removeItem(sessionKey);}catch{}}
+ function viewUrl(v){const url=new URL(window.location.href||window.location.origin+'/');if(v.mode==='app'){url.searchParams.delete('profesor');const roles={coach:'profesor',student:'alumno',admin:'administrador'};url.hash='/'+roles[v.role]+'/'+encodeURIComponent(v.page.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'-'))+(v.detailId?'/'+encodeURIComponent(v.detailId):'');}else url.hash='';return url.href;}
+
  const baseRender=render,baseNavigate=navigate;
  const isAccess=()=>document.body.classList.contains('access-open');
  function snapshot(){
@@ -15,8 +21,8 @@
  function routeKey(v){return v.mode==='access'?JSON.stringify([v.mode,v.access.screen,v.access.accountRole]):JSON.stringify([v.mode,v.role,v.page,v.detailId,v.studentId]);}
  function write(view,replace){
   const entry={...((history.state&&typeof history.state==='object')?history.state:{}),[rootKey]:{token,depth,view}};
-  if(replace)history.replaceState(entry,'');else history.pushState(entry,'');
-  current=view;
+  if(replace)history.replaceState(entry,'',viewUrl(view));else history.pushState(entry,'',viewUrl(view));
+  current=view;storeDemo(view);
  }
  function remember(){if(current)write(snapshot(),true);}
  function commit(){
@@ -30,7 +36,39 @@
  }
  navigate=function(...args){remember();return baseNavigate(...args);};
  render=function(...args){const result=baseRender(...args);if(!isAccess())commit();return result;};
- window.addEventListener('entrenar:access-view',commit);
+ function restoreView(v){
+  if(modal.open)modal.close();
+  if(v.mode==='access')window.EntrenarAccessNavigation?.restore(v.access);
+  else{
+   window.EntrenarAccessNavigation?.hide();
+   role=['coach','student','admin'].includes(v.role)?v.role:'coach';
+   const allowed={coach:['Inicio','Alumnos','Rutinas','Ejercicios','Perfil','Notificaciones','Mi plan','Avisos'],student:['Inicio','Mi rutina','Progreso','Perfil','Avisos'],admin:['Resumen','Profesores','Facturación','Planes','Comunicados','Ajustes']};
+   page=allowed[role].includes(v.page)?v.page:(role==='admin'?'Resumen':'Inicio');
+   detailId=typeof v.detailId==='string'?v.detailId:null;
+   studentId=state.students.some(s=>s.id===v.studentId)?v.studentId:(state.students[0]?.id||'');
+   search=typeof v.search==='string'?v.search:'';
+   filter=['all','active','inactive'].includes(v.filter)?v.filter:'all';
+   if(role==='admin')window.EntrenarAdminNavigation?.restore(v.admin);
+   render();
+   if(page==='Alumnos'&&!detailId){const select=$('#student-filter');if(select)select.value=filter;}
+   main.focus({preventScroll:true});
+  }
+  window.scrollTo({top:Number.isFinite(v.scroll)?v.scroll:0,behavior:'instant'});
+ }
+ window.addEventListener('entrenar:access-view',()=>{
+  if(initialAccess){
+   initialAccess=false;
+   const saved=loadDemo(),invite=new URL(window.location.href||window.location.origin+'/').searchParams.has('profesor');
+   if(saved&&!invite){restoring=true;try{restoreView(saved);}finally{restoring=false;}commit();return;}
+  }
+  commit();
+ });
+ window.addEventListener('pageshow',e=>{
+  if(!e.persisted||!isAccess())return;
+  const saved=loadDemo();if(!saved)return;
+  restoring=true;try{restoreView(saved);}finally{restoring=false;}
+  token=id();depth=0;current=null;commit();
+ });
  // Preserve the source scroll/filter before access buttons change their view.
  document.addEventListener('click',e=>{if(e.target.closest('[data-access-back]')&&depth>0){e.preventDefault();e.stopImmediatePropagation();history.back();return;}if(e.target.closest('[data-access]'))remember();},true);
  window.addEventListener('popstate',e=>{
@@ -42,24 +80,10 @@
   if(crossedBoundary){if(current?.mode!=='app'||!appRoot)return;entry={token,depth:0,view:appRoot};}
   restoring=true;
   try{
-   if(modal.open)modal.close();
    depth=entry.depth;current=entry.view;
    const v=entry.view;
-   if(v.mode==='access')window.EntrenarAccessNavigation?.restore(v.access);
-   else{
-    window.EntrenarAccessNavigation?.hide();
-    role=['coach','student','admin'].includes(v.role)?v.role:'coach';
-    page=typeof v.page==='string'?v.page:(role==='admin'?'Resumen':'Inicio');
-    detailId=typeof v.detailId==='string'?v.detailId:null;
-    studentId=state.students.some(s=>s.id===v.studentId)?v.studentId:(state.students[0]?.id||'');
-    search=typeof v.search==='string'?v.search:'';
-    filter=['all','active','inactive'].includes(v.filter)?v.filter:'all';
-    if(role==='admin')window.EntrenarAdminNavigation?.restore(v.admin);
-    render();
-    if(page==='Alumnos'&&!detailId){const select=$('#student-filter');if(select)select.value=filter;}
-    main.focus({preventScroll:true});
-   }
-   window.scrollTo({top:Number.isFinite(v.scroll)?v.scroll:0,behavior:'instant'});
+   restoreView(v);
+   storeDemo(v);
    if(crossedBoundary)write(v,true);
   }finally{restoring=false;}
  });
