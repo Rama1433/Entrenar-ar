@@ -1,4 +1,4 @@
-# Entrenar · V1.2.1
+# Entrenar · V1.2.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -63,3 +63,7 @@ Archivos principales: index.html, styles.css, app.js, manifest.webmanifest, sw.j
 ## Corrección 1.2.1
 
 El logo se integra como SVG dentro de la interfaz y el HTML inicial. Ya no solicita /icons/entrenar-logo.svg para mostrarse. Se conserva el resto de la app. Actualizar app.js, index.html y sw.js o subir el paquete completo.
+
+## Corrección 1.2.2
+
+Favicon integrado en index.html: símbolo de Entrenar en verde y lima para la pestaña del navegador, sin solicitar un PNG externo. Para este cambio visual basta actualizar index.html; el paquete completo también incrementa la versión y caché a 1.2.2.
