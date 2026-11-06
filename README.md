@@ -1,0 +1,51 @@
+# Entrenar · V1.1
+
+PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
+
+## Publicar en Vercel
+
+1. Subir estos archivos en la raíz de un repositorio nuevo de GitHub.
+2. En Vercel, elegir Add New → Project e importar el repositorio.
+3. Framework Preset: Other. Root Directory: raíz del proyecto. No requiere Install Command ni Build Command. Output Directory: `.`.
+4. Publicar y abrir el enlace HTTPS generado.
+
+No reutilizar el proyecto de Barber Manager. No requiere variables de entorno.
+
+## Probar
+
+El selector superior permite alternar Profesor, Alumno y Administrador. Es una demostración local, sin autenticación. Los cambios se guardan en localStorage del navegador. Las pestañas de prueba comparten esos datos dentro del mismo origen.
+
+- Profesor: cargar y editar alumnos; activar/inactivar conservando historial; crear ejercicios con enlaces a videos; crear y editar rutinas; asignarlas sin duplicados; publicar avisos; probar planes de 10 y 30 alumnos y el plan Equipo.
+- Alumno: seleccionar alumno de prueba; ver rutinas asignadas; registrar carga y repeticiones; marcar ejercicios; usar descanso; finalizar una sesión y consultar historial/progreso.
+- Administrador: consultar y editar registros de profesores y planes; exportar/importar una copia JSON; restablecer datos de ejemplo.
+
+Equipo tiene capacidad comercial a definir y no impone un límite numérico en esta versión. Los profesores adicionales son registros administrativos: no tienen todavía espacios de datos propios. Los precios quedan por definir. No se procesan pagos.
+
+Los datos iniciales son ficticios; el historial comienza vacío. Alumnos inactivos no ocupan cupo y conservan su historial. La edición de una rutina se aplica a todos sus alumnos asignados y reinicia sus sesiones pendientes, conservando sesiones finalizadas.
+
+## Instalación
+
+- Android / Chrome: menú → Instalar aplicación o Agregar a pantalla principal.
+- iPhone / Safari: Compartir → Agregar a pantalla de inicio.
+- PC / Chrome o Edge: instalar desde la barra de direcciones o el menú.
+
+Carga inicial con internet. Después, los archivos principales quedan disponibles sin conexión. Los videos externos requieren internet. El navegador puede eliminar almacenamiento local; exportar copias desde Administrador → Ajustes. Una copia importada reemplaza los datos locales luego de confirmar.
+
+## Próxima etapa
+
+Conectar Supabase: autenticación, roles verificados, espacios separados por profesor, permisos, invitaciones y sincronización. Reemplazar el selector de prueba por acceso real; incorporar el control de suscripciones desde el servidor. No usar esta versión para datos personales reales.
+
+## Desarrollo local
+
+Servir la carpeta mediante HTTP en localhost (por ejemplo `python3 -m http.server 8000`) y abrir http://localhost:8000. En producción requiere HTTPS. No abrir index.html directamente con file://.
+
+Archivos principales: index.html, styles.css, app.js, manifest.webmanifest, sw.js, icons/, vercel.json. Para actualizaciones, incrementar la versión de caché en sw.js.
+
+## Actualización 1.1
+
+- Profesor en celular: menú inferior reducido a Inicio, Alumnos y Rutinas; Más reúne Ejercicios, Avisos y Mi plan. El selector de vista de prueba está dentro de Más en celular. En PC se conserva el menú lateral.
+- Nuevo alumno junto al saludo en móvil; acceso también disponible en Alumnos. La creación de rutinas se concentra en Rutinas.
+- WhatsApp requerido al crear o editar un alumno; los registros anteriores siguen disponibles sin ese dato hasta su edición. Campo de teléfono con código de país y enlace de contacto desde la ficha, sin envío automático.
+- Selector de varios días de lunes a sábado. Si una rutina anterior tenía otro día, el formulario lo conserva como opción adicional para no perderlo.
+- Frases diarias originales para profesor y alumno; dependen de la fecha local del dispositivo y no cambian al navegar o recargar.
+- Se conservan el guardado local y la compatibilidad con copias de V1. Aún no se conectaron cuentas ni base de datos.
