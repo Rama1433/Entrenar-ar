@@ -1,4 +1,4 @@
-# Entrenar · V1.2.2
+# Entrenar · V1.3
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -67,3 +67,12 @@ El logo se integra como SVG dentro de la interfaz y el HTML inicial. Ya no solic
 ## Corrección 1.2.2
 
 Favicon integrado en index.html: símbolo de Entrenar en verde y lima para la pestaña del navegador, sin solicitar un PNG externo. Para este cambio visual basta actualizar index.html; el paquete completo también incrementa la versión y caché a 1.2.2.
+
+## Actualización 1.3
+
+- Frases diarias en el cuadro verde de Inicio para profesor y alumno; se elimina su repetición al pie.
+- Alumno: navegación Inicio / Mi rutina / Progreso, perfil desde nombre/avatar, avisos solo desde campanita. Selector de alumno y cambio de rol de demostración dentro de Perfil.
+- Perfil editable del alumno y datos de contacto de su profesor. Los objetivos y rutinas los configura el profesor.
+- Rutinas con días, vista previa de ejercicios y avance guardado. Pantalla de entrenamiento con tarjetas, indicaciones, último registro real, descanso y completar cada ejercicio.
+- Progreso con peso y altura opcionales, fecha e historial editable. Un registro por día; los registros quedan asociados al alumno. Sin IMC, valoraciones médicas ni objetivos automáticos de peso. Esta demo no comparte medidas con el profesor.
+- Guardado de datos anteriores compatible. No hay conexión a relojes, HealthKit ni Health Connect. No se solicitan permisos de sensores. No hay sincronización entre dispositivos.
