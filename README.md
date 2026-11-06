@@ -1,4 +1,4 @@
-# Entrenar · V1.4.1
+# Entrenar · V1.4.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -109,3 +109,13 @@ El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y ce
 - El agregado diferencial del plan Profesional de 30 alumnos queda pendiente de definición. No se anuncian funciones nuevas ni se fijan precios.
 - Actualización visual de la demo. Registro real y cobros continúan pendientes. No se modifica el guardado de alumnos, rutinas, medidas ni historial.
 - Subir el contenido completo del ZIP al repositorio, en particular access.js, styles.css, app.js, index.html y sw.js. Caché incrementada a 1.4.1.
+
+
+## Ajuste 1.4.2 · Entrada animada y distribución móvil
+
+- Entrada escalonada de logo, presentación, tarjetas y accesos inferiores. Termina a los 700 ms; no bloquea botones ni usa animaciones continuas. El símbolo decorativo acompaña la entrada y queda quieto.
+- La animación se aplica una sola vez por apertura/recarga de la página; no se repite al navegar hacia atrás o regresar desde la demo. No agrega claves ni registros de almacenamiento.
+- Con prefers-reduced-motion: reduce se desactivan todas las animaciones de entrada.
+- Bienvenida móvil distribuida en altura: presentación y tarjetas más amplias, accesos cerca del borde inferior y aviso/pie unificados. Se conservan los márgenes seguros de iPhone. Pantallas bajas o contenido ampliado pueden desplazarse normalmente.
+- Comprobados navegador a 390 × 844 y 320 × 640, ausencia de desborde horizontal, botones habilitados y regreso sin repetir la entrada. Pendiente prueba en iPhone instalado real.
+- Publicar todos los archivos del ZIP. Caché 1.4.2. Sin cambios al historial, planes ni autenticación de demostración.
