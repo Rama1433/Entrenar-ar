@@ -1,4 +1,4 @@
-# Entrenar · V1.5.1
+# Entrenar · V1.6.0
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -136,3 +136,30 @@ El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y ce
 ## Ajuste 1.5.1 · Mensaje para compartir
 
 Se actualiza el borrador de WhatsApp con el saludo personal del profesor, invitación al equipo, enlace precedido por Sumarme al equipo, código y cierre motivador. Conserva saltos de línea y emojis. WhatsApp muestra la URL; no permite convertir el texto del borrador en un enlace con etiqueta distinta. El envío lo confirma el usuario en WhatsApp. Se mantienen los avisos de demostración dentro de la app. La bandeja Alumnos → Solicitudes pendientes, su contador y las aprobaciones reales siguen pendientes de la conexión de cuentas/base. La campanita del profesor continúa reservada a los comunicados del administrador.
+
+
+## Actualización 1.6.0 · Administración de Entrenar
+
+### Pantallas y comportamiento
+
+- Navegación principal del administrador: Resumen, Profesores, Facturación y Comunicados. Ajustes y copias se abren desde el nombre/avatar o el panel lateral. En celular el selector de rol queda en Ajustes → Vista de prueba.
+- Resumen: profesores activos de pago, en prueba, vencidos, pagos registrados según fecha de pago del mes actual, próximos vencimientos (7 días), suspendidos y fechas pendientes. Las cifras se calculan a partir de los datos locales; no se agregaron pagos ficticios.
+- Profesores: búsqueda por nombre/correo/WhatsApp, filtros por plan y estado, tarjetas y ficha con contactos, vencimiento, plan, pagos y mensajes. El conteo de alumnos solo está disponible para c1, el profesor de la demo; los demás muestran Sin sincronizar/—.
+- Alta y edición administrativa de profesores no crean credenciales. Permite cambiar el plan, tipo de suscripción de prueba/de pago, contactos y vencimiento. Suspendido conserva historial y no permite registrar una renovación hasta reactivarlo. El bloqueo de acceso real necesita el servidor.
+- Facturación: mes seleccionado por fecha de pago, importes registrados, profesores que pagaron e historial de pagos. Los abonos previstos corresponden a los profesores activos de pago actuales, separados de lo cobrado; si faltan precios se indica que es subtotal.
+- Planes y precios se abren desde Facturación o Resumen. Importes en ARS, guardados en centavos enteros. Permite coma o punto y hasta dos decimales, sin separadores de miles. Vacío mantiene precio sin definir; cero no renueva. Los precios se reflejan también en las tarjetas de planes de la demo y el acceso.
+- Registrar pago y renovar requiere revisar y confirmar profesor, importe, fecha, período, medio, referencia y observaciones. Guarda nombre/plan/importe históricos. Bloquea períodos superpuestos y doble confirmación. No cobra ni envía dinero.
+- Comunicados: todos los profesores, por plan o un profesor específico; revisión antes de publicar. Guarda destinatarios concretos al publicar. La campanita del profesor c1 filtra por destinatarios. Nunca escribe en avisos de alumnos ni realiza envíos externos.
+- Los comunicados anteriores sin destinatarios se interpretan como destinados a todos. Copias antiguas compatibles; se agregan campos sin borrar datos. Se validan precios, pagos, fechas y destinatarios al importar.
+
+### Validación
+
+Sintaxis de app.js, admin.js y access.js verificada. Pruebas de las seis vistas administrativas, importación anterior/nueva, formato e importes exactos, fechas inválidas y fin de período, renovación, doble confirmación, superposición, suspensión, precios sin alterar historial y segmentación de comunicados sin aviso a alumnos. La verificación visual final en navegador/Android/iPhone queda pendiente por el bloqueo de la herramienta de navegador de la sesión previa. El diseño usa tarjetas y formularios de una columna en celular, cuatro accesos inferiores y respeta safe areas; debe revisarse en los dispositivos reales.
+
+### Próximo paso: conexión de la base
+
+No se conectó ninguna base ni se aprovisionó un servicio. El selector de roles sigue siendo una demostración, no un control de acceso. Antes de usar datos reales, implementar autenticación, rol de administrador verificado por servidor, separación de profesores/alumnos y políticas de acceso; guardar planes y precios, suscripciones y vencimientos, pagos manuales con confirmación transaccional e idempotencia, comunicados con destinatarios, e invitaciones y solicitudes. Conservar snapshots de pagos y no borrar historial al suspender. Las medidas personales de alumnos no se exponen al administrador en este panel.
+
+### Publicación
+
+Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo admin.js, además de qr.js. La caché PWA se incrementa a 1.6.0. El paquete conserva el logo, la bienvenida animada y el circuito anterior de profesor/alumno.
