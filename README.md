@@ -1,4 +1,4 @@
-# Entrenar · V1.4.2
+# Entrenar · V1.5.0
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -119,3 +119,15 @@ El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y ce
 - Bienvenida móvil distribuida en altura: presentación y tarjetas más amplias, accesos cerca del borde inferior y aviso/pie unificados. Se conservan los márgenes seguros de iPhone. Pantallas bajas o contenido ampliado pueden desplazarse normalmente.
 - Comprobados navegador a 390 × 844 y 320 × 640, ausencia de desborde horizontal, botones habilitados y regreso sin repetir la entrada. Pendiente prueba en iPhone instalado real.
 - Publicar todos los archivos del ZIP. Caché 1.4.2. Sin cambios al historial, planes ni autenticación de demostración.
+
+
+## Actualización 1.5.0 · Invitar alumno
+
+- Inicio y Alumnos del profesor ahora muestran Invitar alumno. Abren el mismo panel con nombre del profesor, capacidad actual del plan, QR, código ENT-DEMO, copiar código, copiar enlace y compartir por WhatsApp. El alta manual deja de ser la entrada desde estos botones; editar alumnos existentes se conserva.
+- El QR se calcula en el navegador con qr.js incluido, sin servicios externos. Codifica la raíz del dominio actual con ?profesor=ENT-DEMO; cambia automáticamente al publicar en Vercel. Mantiene cuatro módulos blancos de margen. No escanear la vista interna de revisión desde otro dispositivo: para probar en un teléfono usar la versión publicada.
+- Copiar código/enlace usa el portapapeles y ofrece selección manual si el navegador lo impide. WhatsApp abre un borrador para que el usuario elija a quién enviarlo; no envía automáticamente.
+- El panel explica el circuito futuro de solicitud y aprobación, y que el cupo se ocupa al aceptar. Si el profesor ya alcanzó el límite, muestra un aviso.
+- Esta versión solo presenta invitaciones de demostración. ENT-DEMO es compartido por esta prueba, no identifica una cuenta verificada. Las solicitudes pendientes, aprobación/rechazo, invitaciones personales y control de cupos del servidor quedan para la conexión de la base. No se crea ni vincula un alumno real con este panel.
+- Se conserva todo el guardado local anterior. No hay cambios al historial ni las medidas.
+- Verificación: panel revisado visualmente en PC antes de interrumpirse la sesión; pruebas de código de generación SVG, margen, enlace por dominio, borrador WhatsApp, copiado y cupo. La revisión visual móvil y escaneo con cámara real quedan pendientes porque el navegador de prueba bloqueó el acceso al reanudar.
+- Subir TODOS los archivos a GitHub, incluidos qr.js y QR-LICENSE.txt. Caché PWA incrementada a 1.5.0.
