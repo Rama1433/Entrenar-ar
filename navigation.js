@@ -4,7 +4,7 @@
  if(!window.history?.pushState)return;
  const history=window.history;
  let restoring=false,depth=0,current=null,gesture=null;
- const token=id();
+ let token=id();
  const rootKey='entrenarNavigation';
  const baseRender=render,baseNavigate=navigate;
  const isAccess=()=>document.body.classList.contains('access-open');
@@ -23,8 +23,8 @@
   if(restoring)return;
   const view=snapshot();
   if(!current){depth=0;write(view,true);return;}
-  // Changing the demo account starts a new logical root for the edge gesture.
-  if(view.mode==='app'&&current.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId)){depth=0;write(view,true);return;}
+  // Access and each demo account have separate history boundaries.
+  if(view.mode!==current.mode||(view.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId))){token=id();depth=0;gesture=null;view.scroll=0;write(view,true);return;}
   const changed=routeKey(view)!==routeKey(current);
   if(changed){depth++;view.scroll=0;write(view,false);}else write(view,true);
  }
@@ -34,6 +34,7 @@
  // Preserve the source scroll/filter before access buttons change their view.
  document.addEventListener('click',e=>{if(e.target.closest('[data-access-back]')&&depth>0){e.preventDefault();e.stopImmediatePropagation();history.back();return;}if(e.target.closest('[data-access]'))remember();},true);
  window.addEventListener('popstate',e=>{
+  gesture=null;
   const entry=e.state?.[rootKey];
   if(!entry||entry.token!==token||!entry.view)return;
   restoring=true;
