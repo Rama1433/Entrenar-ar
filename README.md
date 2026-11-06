@@ -1,4 +1,4 @@
-# Entrenar · V1.3.1
+# Entrenar · V1.3.2
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -80,3 +80,7 @@ Favicon integrado en index.html: símbolo de Entrenar en verde y lima para la pe
 ## Corrección 1.3.1
 
 El formulario de peso y altura limita el ancho intrínseco del selector de fecha de iOS, mantiene los campos en una columna en celular, compacta espacios y permite desplazar verticalmente el modal. No cambia registros ni cálculos. La integración de relojes sigue pospuesta.
+
+## Corrección 1.3.2
+
+Peso y altura usan campos de texto con teclado decimal para aceptar coma o punto en iPhone/Android/PC. Hasta un decimal. Validación explícita de formato (sin exponentes ni separadores de miles), positivos y límite de carga de 300 kg / 300 cm. Los registros históricos anteriores no se eliminan; se marca Revisar dato si exceden los límites nuevos. Estos límites son controles de ingreso de esta versión, no criterios médicos.
