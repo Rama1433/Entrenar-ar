@@ -1,4 +1,4 @@
-# Entrenar · V1.3.2
+# Entrenar · V1.3.3
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -84,3 +84,7 @@ El formulario de peso y altura limita el ancho intrínseco del selector de fecha
 ## Corrección 1.3.2
 
 Peso y altura usan campos de texto con teclado decimal para aceptar coma o punto en iPhone/Android/PC. Hasta un decimal. Validación explícita de formato (sin exponentes ni separadores de miles), positivos y límite de carga de 300 kg / 300 cm. Los registros históricos anteriores no se eliminan; se marca Revisar dato si exceden los límites nuevos. Estos límites son controles de ingreso de esta versión, no criterios médicos.
+
+## Ajuste 1.3.3
+
+El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y celular. En pantalla pequeña el saludo se acomoda en dos líneas cuando hace falta; el nombre puede abreviarse visualmente y la mano queda visible.
