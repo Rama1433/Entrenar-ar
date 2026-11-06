@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.2.0';
+const APP_VERSION='1.2.1';
 const icons={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5"/>',dumbbell:'<path d="m6 6 12 12M4 9l5-5M2 7l5-5M15 20l5-5M17 22l5-5M5 10l5-5M14 19l5-5"/>',book:'<path d="M12 5v16M3 3h4a5 5 0 0 1 5 2 5 5 0 0 1 5-2h4v16h-4a5 5 0 0 0-5 2 5 5 0 0 0-5-2H3z"/>',chart:'<path d="M4 3v18h17M8 16v-5M13 16V7M18 16v-9"/>',card:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 10h20M6 15h4"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',activity:'<path d="M2 12h5l3-9 4 18 3-9h5"/>',settings:'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',message:'<path d="M21 11a8 8 0 0 1-8 8H5l-3 3V5a3 3 0 0 1 3-3h8a8 8 0 0 1 8 9zM7 8h9M7 12h6"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',back:'<path d="M19 12H5m5-5-5 5 5 5"/>'};
 const icon=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.activity}</svg>`;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -73,7 +73,8 @@ function normalizeWhatsapp(value){
 }
 
 function roleOptions(current){return `<option value="coach" ${current==='coach'?'selected':''}>Profesor</option><option value="student" ${current==='student'?'selected':''}>Alumno</option><option value="admin" ${current==='admin'?'selected':''}>Administrador</option>`;}
-function brandMarkup(){return `<button type="button" class="brand-home" data-page="${role==='admin'?'Resumen':'Inicio'}" aria-label="Entrenar · Inicio"><img class="brand-logo" src="/icons/entrenar-logo.svg" width="164" height="36" alt="entrenar."></button>`;}
+const embeddedBrandLogo="<svg class=\"brand-logo\" width=\"164\" height=\"36\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 44\" role=\"img\" aria-label=\"entrenar\"><g fill=\"none\" stroke=\"#173b2b\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 24h8l5-15 7 28 6-18h9\"/></g><text x=\"47\" y=\"32\" font-family=\"Inter,Arial,Helvetica,sans-serif\" font-size=\"31\" textLength=\"128\" lengthAdjust=\"spacingAndGlyphs\" font-weight=\"700\" letter-spacing=\"-1.6\" fill=\"#21372c\">entrenar</text><circle cx=\"186\" cy=\"30\" r=\"2.3\" fill=\"#87ab57\"/></svg>";
+function brandMarkup(){return `<button type="button" class="brand-home" data-page="${role==='admin'?'Resumen':'Inicio'}" aria-label="Entrenar · Inicio">${embeddedBrandLogo}</button>`;}
 function renderChrome(){
  const items=navItems();document.body.dataset.role=role;
  const who=role==='coach'?state.coach.name:role==='student'?(selectedStudent()?.name||'Alumno'):'Ramiro Quiroga';

@@ -1,4 +1,4 @@
-# Entrenar · V1.2
+# Entrenar · V1.2.1
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -59,3 +59,7 @@ Archivos principales: index.html, styles.css, app.js, manifest.webmanifest, sw.j
 - La campanita del profesor muestra exclusivamente comunicados del administrador, con indicador de no leídos. Administrador tiene sección Comunicados. La del alumno muestra los avisos de su profesor.
 - Son mensajes dentro de esta demostración local. No son push, WhatsApp ni correo; la entrega entre dispositivos requerirá conectar la base.
 - Copias y registros anteriores compatibles; los campos nuevos se agregan al cargar, sin borrar historial.
+
+## Corrección 1.2.1
+
+El logo se integra como SVG dentro de la interfaz y el HTML inicial. Ya no solicita /icons/entrenar-logo.svg para mostrarse. Se conserva el resto de la app. Actualizar app.js, index.html y sw.js o subir el paquete completo.
