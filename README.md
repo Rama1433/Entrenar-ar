@@ -1,4 +1,4 @@
-# Entrenar · V1.3.3
+# Entrenar · V1.4.0
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -88,3 +88,14 @@ Peso y altura usan campos de texto con teclado decimal para aceptar coma o punto
 ## Ajuste 1.3.3
 
 El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y celular. En pantalla pequeña el saludo se acomoda en dos líneas cuando hace falta; el nombre puede abreviarse visualmente y la mano queda visible.
+
+
+## Actualización 1.4.0 · Acceso y registro visual
+
+- Nueva bienvenida responsive con logo integrado, Soy alumno, Soy profesor y Ya tengo cuenta. Las vistas previas existentes siguen disponibles mediante Demo alumno y Demo profesor; Volver al acceso regresa a la bienvenida.
+- Alumno: código de prueba ENT-DEMO, confirmación del profesor actual, formulario de nombre, WhatsApp y correo, y vista previa de aprobación pendiente. Un enlace /?profesor=ENT-DEMO abre directamente la confirmación; este es el destino que podrá codificarse en un QR de prueba. Todavía no se generan invitaciones ni QR personales.
+- Profesor: selección de plan y formulario. Los precios están por definir; seleccionar no contrata un plan.
+- Inicio de sesión y recuperación maquetados. Las contraseñas están deshabilitadas y no se almacenan. El registro solo muestra una previsualización; no modifica los perfiles existentes, no crea cuentas ni envía solicitudes o correos.
+- No se modificó el formato ni la clave del guardado local existente.
+- Próximo paso: conectar autenticación y base de datos, verificar correo, guardar perfiles, verificar roles en servidor, generar invitaciones seguras con vencimiento y QR, aprobar vinculaciones y habilitar sesiones/recuperación. La interfaz actual no protege datos ni rutas y no debe usarse con datos reales.
+- Para publicar esta actualización, subir todos los archivos del ZIP a la raíz del repositorio, incluido access.js. La caché PWA se incrementa a 1.4.0.
