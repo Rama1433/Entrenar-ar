@@ -6,7 +6,7 @@
   let screen = 'welcome', accountRole = 'student', chosenPlan = 'inicial';
   let previewName = '', invitationConfirmed = false, welcomeSeen = false;
   const action = (label, target, cls = '') => `<button type="button" class="access-btn ${cls}" data-access="${target}">${label}</button>`;
-  const back = target => `<button type="button" class="access-back" data-access="${target}">${icon('back')} Volver</button>`;
+  const back = target => `<button type="button" class="access-back" data-access-back="true" data-access="${target}">${icon('back')} Volver</button>`;
   const demoNote = '<p class="access-note"><span class="access-note-full">Vista previa · Todavía no se crean cuentas ni se realizan cobros. Usá datos de ejemplo.</span><span class="access-note-mobile">Entrenar · Demo sin cuentas ni cobros. Usá datos de ejemplo.</span></p>';
   function display(next) {
     screen = next;
@@ -28,6 +28,7 @@
     const title = root.querySelector('h1');
     title.tabIndex = -1;
     title.focus({preventScroll: true});
+    window.dispatchEvent(new CustomEvent('entrenar:access-view'));
   }
   function enterDemo(nextRole) {
     role = nextRole; page = 'Inicio'; detailId = null; search = ''; filter = 'all';
@@ -77,6 +78,16 @@
       previewName = name; display('pending');
     }
   });
+  window.EntrenarAccessNavigation = {
+    snapshot: () => ({screen: screen === 'pending' ? 'register' : screen, accountRole, chosenPlan, invitationConfirmed}),
+    restore: view => {
+      accountRole = view.accountRole === 'coach' ? 'coach' : 'student';
+      chosenPlan = plans.some(p => p.id === view.chosenPlan) ? view.chosenPlan : 'inicial';
+      invitationConfirmed = !!view.invitationConfirmed;
+      display(['welcome','link','confirm','plans','register','login','recovery'].includes(view.screen) ? view.screen : 'welcome');
+    },
+    hide: () => { root.hidden = true; root.replaceChildren(); document.body.classList.remove('access-open'); }
+  };
   const params = new URLSearchParams(window.location.search);
   const code = params.get('profesor');
   if (code) {

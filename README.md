@@ -1,4 +1,4 @@
-# Entrenar · V1.6.2
+# Entrenar · V1.7.0
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -184,3 +184,14 @@ Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo ad
 - Animación de bienvenida pasa de 700 a 1200 ms, con entrada escalonada y desplazamiento suave de 20 px. Sigue una vez por apertura y sin bloquear botones. Se conserva prefers-reduced-motion y no se repite al volver.
 - Pruebas anteriores pasaron, además de destinos y filtros de tarjetas y navegación del profesor. La percepción visual final en dispositivos sigue pendiente de revisión.
 - Subir todos los archivos. Versión/caché 1.6.2. No modifica datos, pagos ni historial.
+
+
+## Actualización 1.7.0 · Historial y gesto de volver en iPhone
+
+- navigation.js agrega entradas de History API a pantallas y fichas, sin recargar. Atrás/Adelante del navegador restaura vista, filtros y desplazamiento; no agrega una nueva entrada al restaurar ni al renderizar la misma pantalla.
+- El acceso/registro también genera historial de pantallas. El botón Volver del acceso usa atrás cuando hay un recorrido previo. La bienvenida no vuelve a animarse al regresar. No se guardan contraseñas ni valores de formularios en el historial. La pantalla de resultado de registro se restaura como formulario al volver a recorrerla.
+- Safari normal usa el historial nativo. Para iPhone/iPad instalado, detectado mediante navigator.standalone === true, se agrega deslizamiento desde los primeros 24 px del borde izquierdo: al menos 90 px hacia la derecha, movimiento vertical máximo 45 px y hasta 1,2 segundos. No se activa desde el centro, formularios, botones, enlaces, tablas horizontales o modales; tampoco desde la raíz del recorrido. No se modifican estilos de scroll/touch globales.
+- Cambiar de rol o alumno de prueba establece una nueva raíz lógica para el gesto. Al abrir/recargar se inicia un recorrido nuevo; las vistas no son sesiones autenticadas.
+- Se conserva el guardado de entrenamientos e historial. Volver con el navegador cierra un modal abierto al restaurar la pantalla anterior; los formularios sin guardar no se persisten.
+- Pruebas de historial atrás/adelante, fichas, filtros y scroll, acceso, render sin entradas duplicadas, gesto válido y exclusiones. Todas las pruebas administrativas previas pasaron. El gesto nativo y su interacción física en Safari/PWA instalada requieren prueba real en iPhone; no se verificó en dispositivo físico.
+- Publicar TODOS los archivos, incluido navigation.js. Versión/caché 1.7.0. La conexión de base y cuentas reales sigue pendiente.
