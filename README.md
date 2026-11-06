@@ -1,4 +1,4 @@
-# Entrenar · V1.5.0
+# Entrenar · V1.5.1
 
 PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
 
@@ -131,3 +131,8 @@ El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y ce
 - Se conserva todo el guardado local anterior. No hay cambios al historial ni las medidas.
 - Verificación: panel revisado visualmente en PC antes de interrumpirse la sesión; pruebas de código de generación SVG, margen, enlace por dominio, borrador WhatsApp, copiado y cupo. La revisión visual móvil y escaneo con cámara real quedan pendientes porque el navegador de prueba bloqueó el acceso al reanudar.
 - Subir TODOS los archivos a GitHub, incluidos qr.js y QR-LICENSE.txt. Caché PWA incrementada a 1.5.0.
+
+
+## Ajuste 1.5.1 · Mensaje para compartir
+
+Se actualiza el borrador de WhatsApp con el saludo personal del profesor, invitación al equipo, enlace precedido por Sumarme al equipo, código y cierre motivador. Conserva saltos de línea y emojis. WhatsApp muestra la URL; no permite convertir el texto del borrador en un enlace con etiqueta distinta. El envío lo confirma el usuario en WhatsApp. Se mantienen los avisos de demostración dentro de la app. La bandeja Alumnos → Solicitudes pendientes, su contador y las aprobaciones reales siguen pendientes de la conexión de cuentas/base. La campanita del profesor continúa reservada a los comunicados del administrador.
