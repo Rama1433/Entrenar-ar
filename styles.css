@@ -168,3 +168,12 @@ body[data-role=admin] .stat-value{overflow-wrap:anywhere}
 
 .modal-content form[id^="cloud-"] input[type="date"]{appearance:none;-webkit-appearance:none;display:block;width:100%;min-width:0;min-inline-size:0;max-width:100%;font-size:16px}.modal-content form[id^="cloud-"] input[type="date"]::-webkit-date-and-time-value{text-align:left}.cloud-live .top-actions>.cloud-exit{flex-shrink:0}
 @media(max-width:600px){body.cloud-live:is([data-role="coach"],[data-role="student"]) .profile-trigger-text{max-width:clamp(38px,calc(100vw - 300px),90px);min-width:0}}
+
+/* Clear entry action and touch refresh, V1.9.1 */
+.access-login-primary{margin:20px 0 24px;min-height:54px;font-size:15px;box-shadow:0 3px 10px #173b2b0a}.access-login-primary:hover{background:#244e38}.access-login-primary:active{transform:translateY(1px)}
+html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscroll-behavior-y:contain}
+.pull-refresh{position:fixed;z-index:200;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);padding:12px 18px;border-radius:28px;background:#fff;border:1px solid #dce5d4;color:#173b2b;box-shadow:0 4px 20px #173b2b20;pointer-events:none;font-size:13px;white-space:nowrap}.pull-refresh[hidden]{display:none}.pull-refresh-icon{display:inline-grid;place-items:center;font-size:21px;width:24px;height:24px;line-height:1;transition:transform .15s}.pull-refresh.ready{background:#edf3e6;border-color:#aac282}.pull-refresh.loading .pull-refresh-icon{animation:pull-refresh-spin .9s linear infinite}
+@keyframes pull-refresh-spin{to{transform:rotate(360deg)}}
+@media(max-width:700px){.access-login-primary{min-height:54px;margin-top:20px;font-size:15px}.access-screen-welcome .access-choice strong{font-size:16px;line-height:1.35}.access-screen-welcome .access-welcome-actions{margin-top:0}}
+@media(max-width:360px){.access-screen-welcome .access-choice strong{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.pull-refresh-icon{transition:none}.pull-refresh.loading .pull-refresh-icon{animation:none}}

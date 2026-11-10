@@ -1,4 +1,4 @@
-# Entrenar · V1.9.0 · Supabase
+# Entrenar · V1.9.1 · Supabase
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -11,7 +11,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.0.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.1.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -43,7 +43,7 @@ Las cuentas reales arrancan sin alumnos, ejercicios, rutinas ni pagos de ejemplo
 
 Los registros reales se guardan en Supabase. Los datos cargados permanecen en memoria de la pestaña; no se exportan a la clave local de las demos ni al caché del service worker. Auth conserva su sesión en este navegador para mantener el acceso. Los borradores de entrenamiento y los avisos leídos del alumno usan sessionStorage separado por identificador de usuario; se limpian al salir. El entrenamiento completado se guarda en la base.
 
-La app actualiza al volver a la pestaña y periódicamente; también tiene **Actualizar**. Los registros reales necesitan Internet. Sin conexión no confirma guardados ni usa la demo como reemplazo. El borrador no se sincroniza entre dispositivos y se pierde si se cierra la pestaña o se sale de la cuenta.
+La app actualiza al volver a la pestaña y periódicamente; en celulares permite deslizar hacia abajo desde el inicio de la pantalla para actualizar. En PC podés recargar desde el navegador. Los registros reales necesitan Internet. Sin conexión no confirma guardados ni usa la demo como reemplazo. El borrador no se sincroniza entre dispositivos y se pierde si se cierra la pestaña o se sale de la cuenta.
 
 **Demo alumno / Demo profesor** conservan su guardado local anterior. El selector de vistas y las copias JSON corresponden exclusivamente a las demos. Para cambiar de cuenta real usá **Salir**. La navegación no autoriza roles ni restaura datos de otra cuenta.
 
@@ -57,3 +57,12 @@ La app actualiza al volver a la pestaña y periódicamente; también tiene **Act
 No se ingresó a tu cuenta, no se crearon usuarios remotos ni se aplicó el SQL 03 desde aquí. Quedan por comprobar en tu despliegue el primer ingreso real y la entrega de correos con tu configuración SMTP.
 
 SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución. Licencia en SUPABASE-LICENSE.txt. QR local, sin servicio externo; licencia en QR-LICENSE.txt.
+
+## Cambios V1.9.1
+
+- Bienvenida: “Registrarme como alumno”, “Registrarme como profesor” y botón verde grande “Ingresar a mi cuenta”.
+- Se quitó el botón Actualizar de la franja de cuenta conectada y de Ajustes.
+- Celular: desde arriba de la pantalla, arrastrá hacia abajo y soltá al ver “Soltá para actualizar”. Un indicador muestra la carga y el resultado. Funciona para administrador, profesor y alumno.
+- El gesto actualiza los datos sin recargar toda la app. Conserva la pestaña y el avance del entrenamiento. No se activa en formularios, modales, tablas desplazables ni durante un guardado. El gesto lateral para volver se conserva.
+- Los botones “Comprobar estado” y “Comprobar activación” se mantienen en las pantallas de espera para que ese paso siga siendo claro y accesible.
+- No requiere cambios de SQL ni de configuración de Supabase.

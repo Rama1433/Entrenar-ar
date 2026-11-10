@@ -137,11 +137,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.0 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.1 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
-  const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span><button data-cloud="refresh">Actualizar</button>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.0</span>';
+  const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.1</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -153,7 +153,7 @@
    const create=main.querySelector('[data-admin-action="new"]');if(create)create.remove();
    const edit=main.querySelector('[data-admin-action="edit"]');if(edit)edit.textContent='Editar plan y estado';
    if(page==='Profesores'&&!state.adminCoaches.length)main.insertAdjacentHTML('beforeend','<p class="subtle">Los profesores aparecerán acá cuando confirmen su correo y completen su registro. Después podés activar su prueba o plan desde su ficha.</p>');
-   if(page==='Ajustes')main.innerHTML=heading('TU CUENTA','Administración','Tu acceso y los planes de Entrenar.')+`<section class="panel"><div class="panel-content"><h2>${esc(personal?.full_name||'Administrador')}</h2><p>${esc(user.email)}</p><div class="btns"><button class="btn outline" data-cloud="profile">Editar mis datos</button><button class="btn outline" data-page="Planes">Planes y precios</button><button class="btn outline" data-cloud="refresh">Actualizar datos</button></div></div></section>`;
+   if(page==='Ajustes')main.innerHTML=heading('TU CUENTA','Administración','Tu acceso y los planes de Entrenar.')+`<section class="panel"><div class="panel-content"><h2>${esc(personal?.full_name||'Administrador')}</h2><p>${esc(user.email)}</p><div class="btns"><button class="btn outline" data-cloud="profile">Editar mis datos</button><button class="btn outline" data-page="Planes">Planes y precios</button></div></div></section>`;
   }
   if(role==='coach'){
    if(!isCoachActive()&&!['Perfil','Mi plan','Notificaciones'].includes(page))main.innerHTML=heading('TU CUENTA','Tu plan necesita activación','El administrador debe activar tu prueba o renovar tu suscripción.')+`<section class="panel"><div class="panel-content"><p>Estado: ${esc(subscription?.status==='suspended'?'Suspendido':subscription?.ends_on&&subscription.ends_on<today()?'Vencido':'Pendiente')}</p><button class="btn outline" data-page="Perfil">Ver mi perfil</button><button class="btn primary" data-cloud="refresh">Comprobar activación</button></div></section>`;
@@ -217,7 +217,7 @@
   return true;
  }
  const api={
-  get live(){return live;},get checking(){return checking;},get accountId(){return live?user?.id:null;},get role(){return myRole;},get displayName(){return personal?.full_name||'Administrador';},
+  get canRefresh(){return live&&!checking&&!busy&&!refreshTask&&!recovery;},get live(){return live;},get checking(){return checking;},get accountId(){return live?user?.id:null;},get role(){return myRole;},get displayName(){return personal?.full_name||'Administrador';},
   mapData,refresh,friendly,adminCommitPayment,adminCommitMessage,
   planPriceLabel(pid){const cents=publicPrices[pid];return Number.isSafeInteger(cents)&&cents>0?new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(cents/100):'Precio por definir';},
   async loadPlanPrices(){const rows=check(await client.from('ent_plans').select('id,price_cents'));for(const p of rows)publicPrices[p.id]=p.price_cents===null?null:Number(p.price_cents);},
