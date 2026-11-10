@@ -280,6 +280,4 @@
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&live&&!busy&&Date.now()-lastRefresh>30000)refresh().catch(e=>toast(friendly(e)));});
  setInterval(()=>{if(live&&!busy&&!document.hidden&&!modal.open&&!document.activeElement?.matches('input,textarea,select'))refresh().catch(()=>{});},60000);
 })();
-.cloud-live .demo-strip {
-  display: none;
-}
+
