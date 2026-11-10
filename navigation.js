@@ -8,15 +8,15 @@
  const rootKey='entrenarNavigation';
  const sessionKey='entrenar-demo-navigation';
  let initialAccess=true;
- function loadDemo(){try{const v=JSON.parse(sessionStorage.getItem(sessionKey)||'null');return v?.mode==='app'&&['coach','student','admin'].includes(v.role)&&typeof v.page==='string'?v:null;}catch{return null;}}
- function storeDemo(v){try{if(v.mode==='app')sessionStorage.setItem(sessionKey,JSON.stringify(v));else sessionStorage.removeItem(sessionKey);}catch{}}
+ function loadDemo(){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return null;try{const v=JSON.parse(sessionStorage.getItem(sessionKey)||'null');return v?.mode==='app'&&!v.accountId&&['coach','student','admin'].includes(v.role)&&typeof v.page==='string'?v:null;}catch{return null;}}
+ function storeDemo(v){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return;try{if(v.mode==='app')sessionStorage.setItem(sessionKey,JSON.stringify(v));else sessionStorage.removeItem(sessionKey);}catch{}}
  function viewUrl(v){const url=new URL(window.location.href||window.location.origin+'/');if(v.mode==='app'){url.searchParams.delete('profesor');const roles={coach:'profesor',student:'alumno',admin:'administrador'};url.hash='/'+roles[v.role]+'/'+encodeURIComponent(v.page.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'-'))+(v.detailId?'/'+encodeURIComponent(v.detailId):'');}else url.hash='';return url.href;}
 
  const baseRender=render,baseNavigate=navigate;
  const isAccess=()=>document.body.classList.contains('access-open');
  function snapshot(){
   if(isAccess())return {mode:'access',access:window.EntrenarAccessNavigation?.snapshot()||{screen:'welcome'},scroll:window.scrollY||0};
-  return {mode:'app',role,page,detailId,studentId,search,filter,admin:role==='admin'?window.EntrenarAdminNavigation?.snapshot():null,scroll:window.scrollY||0};
+  return {mode:'app',accountId:window.EntrenarCloud?.accountId||null,role,page,detailId,studentId,search,filter,admin:role==='admin'?window.EntrenarAdminNavigation?.snapshot():null,scroll:window.scrollY||0};
  }
  function routeKey(v){return v.mode==='access'?JSON.stringify([v.mode,v.access.screen,v.access.accountRole]):JSON.stringify([v.mode,v.role,v.page,v.detailId,v.studentId]);}
  function write(view,replace){
@@ -26,17 +26,18 @@
  }
  function remember(){if(current)write(snapshot(),true);}
  function commit(){
-  if(restoring)return;
+  if(restoring||window.EntrenarCloud?.checking)return;
   const view=snapshot();
   if(!current){depth=0;if(view.mode==='app')appRoot={...view,page:view.role==='admin'?'Resumen':'Inicio',detailId:null,search:'',filter:'all',scroll:0};write(view,true);return;}
   // Access and each demo account have separate history boundaries.
-  if(view.mode!==current.mode||(view.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId))){token=id();depth=0;gesture=null;view.scroll=0;appRoot=view.mode==='app'?{...view,page:view.role==='admin'?'Resumen':'Inicio',detailId:null,search:'',filter:'all',scroll:0}:null;write(view,true);return;}
+  if(view.mode!==current.mode||(view.mode==='app'&&(view.role!==current.role||view.studentId!==current.studentId||view.accountId!==current.accountId))){token=id();depth=0;gesture=null;view.scroll=0;appRoot=view.mode==='app'?{...view,page:view.role==='admin'?'Resumen':'Inicio',detailId:null,search:'',filter:'all',scroll:0}:null;write(view,true);return;}
   const changed=routeKey(view)!==routeKey(current);
   if(changed){depth++;view.scroll=0;write(view,false);}else write(view,true);
  }
  navigate=function(...args){remember();return baseNavigate(...args);};
  render=function(...args){const result=baseRender(...args);if(!isAccess())commit();return result;};
  function restoreView(v){
+  if(window.EntrenarCloud?.live&&(v.mode!=='app'||v.accountId!==window.EntrenarCloud.accountId||v.role!==window.EntrenarCloud.role))return;
   if(modal.open)modal.close();
   if(v.mode==='access')window.EntrenarAccessNavigation?.restore(v.access);
   else{
@@ -75,7 +76,8 @@
   gesture=null;
   let entry=e.state?.[rootKey];
   if(!entry||!entry.view)return;
-  const matches=entry.token===token&&entry.view.mode===current?.mode&&(current.mode!=='app'||entry.view.role===current.role&&entry.view.studentId===current.studentId);
+  if(window.EntrenarCloud?.checking)return;
+  const matches=entry.token===token&&entry.view.mode===current?.mode&&(current.mode!=='app'||entry.view.role===current.role&&entry.view.studentId===current.studentId&&entry.view.accountId===current.accountId);
   const crossedBoundary=!matches;
   if(crossedBoundary){if(current?.mode!=='app'||!appRoot)return;entry={token,depth:0,view:appRoot};}
   restoring=true;
@@ -87,6 +89,9 @@
    if(crossedBoundary)write(v,true);
   }finally{restoring=false;}
  });
+ window.addEventListener('entrenar:account-changed',()=>{token=id();depth=0;current=null;appRoot=null;commit();});
+ window.EntrenarAccountResume=v=>{if(!v||v.mode!=='app'||!window.EntrenarCloud?.live||v.accountId!==window.EntrenarCloud.accountId||v.role!==window.EntrenarCloud.role)return;restoring=true;try{restoreView(v);}finally{restoring=false;}commit();};
+ window.EntrenarDemoResume=()=>{const saved=loadDemo();if(!saved)return false;restoring=true;try{restoreView(saved);}finally{restoring=false;}commit();return true;};
  // Safari uses native browser history. Installed iOS PWAs get an edge gesture.
  document.addEventListener('touchstart',e=>{
   gesture=null;

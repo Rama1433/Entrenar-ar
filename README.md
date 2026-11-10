@@ -1,225 +1,59 @@
-# Entrenar · V1.8.0
+# Entrenar · V1.9.0 · Supabase
 
-PWA independiente para profesores y alumnos. Funciona sin compilación, dependencias ni base de datos.
+PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
-## Publicar en Vercel
+## Activar esta versión (en este orden)
 
-1. Subir estos archivos en la raíz de un repositorio nuevo de GitHub.
-2. En Vercel, elegir Add New → Project e importar el repositorio.
-3. Framework Preset: Other. Root Directory: raíz del proyecto. No requiere Install Command ni Build Command. Output Directory: `.`.
-4. Publicar y abrir el enlace HTTPS generado.
+1. En el proyecto Supabase de Entrenar, ejecutá **Entrenar_03_Conexion_App.sql** en SQL Editor. Se entrega aparte. Ejecutalo una vez. **No vuelvas a ejecutar los SQL 01 y 02**: ya están aplicados y tu administrador está creado.
+2. En Supabase → Authentication → URL Configuration:
+   - Site URL: `https://entrenar-ar.vercel.app/`
+   - Redirect URLs: `https://entrenar-ar.vercel.app/` y `https://entrenar-ar.vercel.app/?recuperar=1`.
+   - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
+3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
+4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.0.
+6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
-No reutilizar el proyecto de Barber Manager. No requiere variables de entorno.
+La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
 
-## Probar
+## Correo: necesario para abrir registros al público
 
-El selector superior permite alternar Profesor, Alumno y Administrador. Es una demostración local, sin autenticación. Los cambios se guardan en localStorage del navegador. Las pestañas de prueba comparten esos datos dentro del mismo origen.
+Antes de invitar personas externas, configurá un proveedor SMTP en Supabase. El servicio predeterminado de Supabase solo envía correos a integrantes del equipo del proyecto y tiene límites para pruebas. Sin SMTP propio, la confirmación de cuentas nuevas, recuperación y cambio de correo de usuarios externos pueden fallar. No desactives la confirmación de correo para evitar este paso.
 
-- Profesor: cargar y editar alumnos; activar/inactivar conservando historial; crear ejercicios con enlaces a videos; crear y editar rutinas; asignarlas sin duplicados; publicar avisos; probar planes de 10 y 30 alumnos y el plan Equipo.
-- Alumno: seleccionar alumno de prueba; ver rutinas asignadas; registrar carga y repeticiones; marcar ejercicios; usar descanso; finalizar una sesión y consultar historial/progreso.
-- Administrador: consultar y editar registros de profesores y planes; exportar/importar una copia JSON; restablecer datos de ejemplo.
+Tu administrador, creado y confirmado desde el panel, puede probar el ingreso sin esperar esta configuración. Para probar el resto antes del SMTP, el titular puede crear sus propias cuentas de prueba confirmadas en Authentication → Users; al ingresar, completan su perfil. La app no crea cuentas ni envía correos por su cuenta durante las pruebas automatizadas.
 
-Equipo tiene capacidad comercial a definir y no impone un límite numérico en esta versión. Los profesores adicionales son registros administrativos: no tienen todavía espacios de datos propios. Los precios quedan por definir. No se procesan pagos.
+Referencias: https://supabase.com/docs/guides/auth/auth-smtp y https://supabase.com/docs/guides/auth/redirect-urls.
 
-Los datos iniciales son ficticios; el historial comienza vacío. Alumnos inactivos no ocupan cupo y conservan su historial. La edición de una rutina se aplica a todos sus alumnos asignados y reinicia sus sesiones pendientes, conservando sesiones finalizadas.
+## Recorrido real
 
-## Instalación
+- Profesor: elige plan, crea cuenta y confirma correo. Completa nombre y WhatsApp. Aparece en **Profesores**, pendiente de activación.
+- Administrador: abre la ficha del profesor → **Editar plan y estado** → En prueba o Activo y fecha de vencimiento. No se cobra automáticamente. Puede suspender conservando el historial.
+- Profesor activo: **Invitar alumno** genera un código y QR válido por 7 días. Se reutiliza mientras está abierto el mismo acceso; generar otro invalida el anterior. Comparte por WhatsApp o copia el enlace/código.
+- Alumno: revisa el nombre del profesor, crea y confirma su cuenta (o ingresa si ya tiene cuenta). Completa su perfil. La vinculación queda pendiente.
+- Profesor: ve las solicitudes en **Inicio y Alumnos**, y aprueba o rechaza. El cupo se ocupa al aprobar y se controla en la base. Un alumno tiene una sola vinculación pendiente/aprobada a la vez.
+- Profesor: crea ejercicios, guarda rutinas completas en una operación y las asigna a sus alumnos aprobados. Puede actualizar objetivo, días y notas de la ficha. El alumno edita su propio nombre y contacto.
+- Alumno: consulta rutinas asignadas, registra entrenamientos y medidas. Solo él puede leer sus medidas; tampoco el administrador tiene acceso a ellas.
+- Administrador: configura precios, registra pagos manuales con revisión y ve historial por profesor/mes. Los pagos conservan nombres, plan e importe del momento. Se bloquean pagos por cero, períodos superpuestos y reintentos duplicados de una misma operación.
+- Comunicados del administrador: solo los profesores seleccionados; no se agregan a los avisos de alumnos. Los avisos del profesor llegan solo a sus alumnos aprobados con vinculación vigente.
+- Perfil: permite editar nombre/WhatsApp y solicitar cambio de correo. El cambio se confirma por email y conserva el identificador y el rol de la cuenta.
 
-- Android / Chrome: menú → Instalar aplicación o Agregar a pantalla principal.
-- iPhone / Safari: Compartir → Agregar a pantalla de inicio.
-- PC / Chrome o Edge: instalar desde la barra de direcciones o el menú.
+## Datos, conexión y demos
 
-Carga inicial con internet. Después, los archivos principales quedan disponibles sin conexión. Los videos externos requieren internet. El navegador puede eliminar almacenamiento local; exportar copias desde Administrador → Ajustes. Una copia importada reemplaza los datos locales luego de confirmar.
+Las cuentas reales arrancan sin alumnos, ejercicios, rutinas ni pagos de ejemplo. No se importan automáticamente los datos de la demo.
 
-## Próxima etapa
+Los registros reales se guardan en Supabase. Los datos cargados permanecen en memoria de la pestaña; no se exportan a la clave local de las demos ni al caché del service worker. Auth conserva su sesión en este navegador para mantener el acceso. Los borradores de entrenamiento y los avisos leídos del alumno usan sessionStorage separado por identificador de usuario; se limpian al salir. El entrenamiento completado se guarda en la base.
 
-Conectar Supabase: autenticación, roles verificados, espacios separados por profesor, permisos, invitaciones y sincronización. Reemplazar el selector de prueba por acceso real; incorporar el control de suscripciones desde el servidor. No usar esta versión para datos personales reales.
+La app actualiza al volver a la pestaña y periódicamente; también tiene **Actualizar**. Los registros reales necesitan Internet. Sin conexión no confirma guardados ni usa la demo como reemplazo. El borrador no se sincroniza entre dispositivos y se pierde si se cierra la pestaña o se sale de la cuenta.
 
-## Desarrollo local
+**Demo alumno / Demo profesor** conservan su guardado local anterior. El selector de vistas y las copias JSON corresponden exclusivamente a las demos. Para cambiar de cuenta real usá **Salir**. La navegación no autoriza roles ni restaura datos de otra cuenta.
 
-Servir la carpeta mediante HTTP en localhost (por ejemplo `python3 -m http.server 8000`) y abrir http://localhost:8000. En producción requiere HTTPS. No abrir index.html directamente con file://.
+## Validación de esta entrega
 
-Archivos principales: index.html, styles.css, app.js, manifest.webmanifest, sw.js, icons/, vercel.json. Para actualizaciones, incrementar la versión de caché en sw.js.
+- Comprobación de sintaxis de todos los JS propios.
+- PostgreSQL local (PGlite): aislamiento entre dos profesores y tres alumnos, permisos de administrador, restricciones de medidas, cupos, actualización atómica de rutinas, avisos segmentados, pagos e historial inmutable.
+- Interfaz y repositorio con Supabase simulado: acceso, invitación, cada rol, errores de guardado, prevención de doble clic, separación de demo y datos reales, historial de navegación y limpieza al salir.
+- Navegador: formulario de ingreso/registro y navegación de la demo.
 
-## Actualización 1.1
+No se ingresó a tu cuenta, no se crearon usuarios remotos ni se aplicó el SQL 03 desde aquí. Quedan por comprobar en tu despliegue el primer ingreso real y la entrega de correos con tu configuración SMTP.
 
-- Profesor en celular: menú inferior reducido a Inicio, Alumnos y Rutinas; Más reúne Ejercicios, Avisos y Mi plan. El selector de vista de prueba está dentro de Más en celular. En PC se conserva el menú lateral.
-- Nuevo alumno junto al saludo en móvil; acceso también disponible en Alumnos. La creación de rutinas se concentra en Rutinas.
-- WhatsApp requerido al crear o editar un alumno; los registros anteriores siguen disponibles sin ese dato hasta su edición. Campo de teléfono con código de país y enlace de contacto desde la ficha, sin envío automático.
-- Selector de varios días de lunes a sábado. Si una rutina anterior tenía otro día, el formulario lo conserva como opción adicional para no perderlo.
-- Frases diarias originales para profesor y alumno; dependen de la fecha local del dispositivo y no cambian al navegar o recargar.
-- Se conservan el guardado local y la compatibilidad con copias de V1. Aún no se conectaron cuentas ni base de datos.
-
-## Actualización 1.2
-
-- Logo de Entrenar incluido como archivo SVG y en la caché de la PWA; visible en menú lateral de PC y cabecera de celular.
-- Profesor en móvil: Inicio, Alumnos, Rutinas y Ejercicios. El nombre/avatar abre Perfil, reemplazando Más.
-- Perfil: datos editables (nombre, correo y WhatsApp), plan actual, cupos y acceso a planes. El estado y vencimiento siguen siendo de prueba, sin cobros.
-- Avisos para alumnos desde el perfil, con revisión y confirmación antes de publicar.
-- La campanita del profesor muestra exclusivamente comunicados del administrador, con indicador de no leídos. Administrador tiene sección Comunicados. La del alumno muestra los avisos de su profesor.
-- Son mensajes dentro de esta demostración local. No son push, WhatsApp ni correo; la entrega entre dispositivos requerirá conectar la base.
-- Copias y registros anteriores compatibles; los campos nuevos se agregan al cargar, sin borrar historial.
-
-## Corrección 1.2.1
-
-El logo se integra como SVG dentro de la interfaz y el HTML inicial. Ya no solicita /icons/entrenar-logo.svg para mostrarse. Se conserva el resto de la app. Actualizar app.js, index.html y sw.js o subir el paquete completo.
-
-## Corrección 1.2.2
-
-Favicon integrado en index.html: símbolo de Entrenar en verde y lima para la pestaña del navegador, sin solicitar un PNG externo. Para este cambio visual basta actualizar index.html; el paquete completo también incrementa la versión y caché a 1.2.2.
-
-## Actualización 1.3
-
-- Frases diarias en el cuadro verde de Inicio para profesor y alumno; se elimina su repetición al pie.
-- Alumno: navegación Inicio / Mi rutina / Progreso, perfil desde nombre/avatar, avisos solo desde campanita. Selector de alumno y cambio de rol de demostración dentro de Perfil.
-- Perfil editable del alumno y datos de contacto de su profesor. Los objetivos y rutinas los configura el profesor.
-- Rutinas con días, vista previa de ejercicios y avance guardado. Pantalla de entrenamiento con tarjetas, indicaciones, último registro real, descanso y completar cada ejercicio.
-- Progreso con peso y altura opcionales, fecha e historial editable. Un registro por día; los registros quedan asociados al alumno. Sin IMC, valoraciones médicas ni objetivos automáticos de peso. Esta demo no comparte medidas con el profesor.
-- Guardado de datos anteriores compatible. No hay conexión a relojes, HealthKit ni Health Connect. No se solicitan permisos de sensores. No hay sincronización entre dispositivos.
-
-## Corrección 1.3.1
-
-El formulario de peso y altura limita el ancho intrínseco del selector de fecha de iOS, mantiene los campos en una columna en celular, compacta espacios y permite desplazar verticalmente el modal. No cambia registros ni cálculos. La integración de relojes sigue pospuesta.
-
-## Corrección 1.3.2
-
-Peso y altura usan campos de texto con teclado decimal para aceptar coma o punto en iPhone/Android/PC. Hasta un decimal. Validación explícita de formato (sin exponentes ni separadores de miles), positivos y límite de carga de 300 kg / 300 cm. Los registros históricos anteriores no se eliminan; se marca Revisar dato si exceden los límites nuevos. Estos límites son controles de ingreso de esta versión, no criterios médicos.
-
-## Ajuste 1.3.3
-
-El acceso al perfil de profesor y alumno saluda con Hola, nombre 👋 en PC y celular. En pantalla pequeña el saludo se acomoda en dos líneas cuando hace falta; el nombre puede abreviarse visualmente y la mano queda visible.
-
-
-## Actualización 1.4.0 · Acceso y registro visual
-
-- Nueva bienvenida responsive con logo integrado, Soy alumno, Soy profesor y Ya tengo cuenta. Las vistas previas existentes siguen disponibles mediante Demo alumno y Demo profesor; Volver al acceso regresa a la bienvenida.
-- Alumno: código de prueba ENT-DEMO, confirmación del profesor actual, formulario de nombre, WhatsApp y correo, y vista previa de aprobación pendiente. Un enlace /?profesor=ENT-DEMO abre directamente la confirmación; este es el destino que podrá codificarse en un QR de prueba. Todavía no se generan invitaciones ni QR personales.
-- Profesor: selección de plan y formulario. Los precios están por definir; seleccionar no contrata un plan.
-- Inicio de sesión y recuperación maquetados. Las contraseñas están deshabilitadas y no se almacenan. El registro solo muestra una previsualización; no modifica los perfiles existentes, no crea cuentas ni envía solicitudes o correos.
-- No se modificó el formato ni la clave del guardado local existente.
-- Próximo paso: conectar autenticación y base de datos, verificar correo, guardar perfiles, verificar roles en servidor, generar invitaciones seguras con vencimiento y QR, aprobar vinculaciones y habilitar sesiones/recuperación. La interfaz actual no protege datos ni rutas y no debe usarse con datos reales.
-- Para publicar esta actualización, subir todos los archivos del ZIP a la raíz del repositorio, incluido access.js. La caché PWA se incrementa a 1.4.0.
-
-
-## Ajuste 1.4.1 · Bienvenida móvil y planes
-
-- Bienvenida de celular con bloque verde, espacios compactos y pie cercano al contenido. Se conserva la composición de bienvenida de PC.
-- Todas las pantallas de acceso respetan safe-area-inset-top/bottom/left/right en iPhone PWA con viewport-fit=cover. La barra de estado queda fuera del contenido. Validación visual en navegador a 320 y 390 px; queda pendiente la comprobación en iPhone instalado real.
-- Al elegir Soy profesor aparece un comparador de planes con cupo, descripción, las cuatro funciones actuales y abono mensual. Tres columnas en PC y tarjetas apiladas en celular. El plan seleccionado se resalta en verde; la elección mantiene foco y posición de desplazamiento y se conserva al continuar/volver.
-- El agregado diferencial del plan Profesional de 30 alumnos queda pendiente de definición. No se anuncian funciones nuevas ni se fijan precios.
-- Actualización visual de la demo. Registro real y cobros continúan pendientes. No se modifica el guardado de alumnos, rutinas, medidas ni historial.
-- Subir el contenido completo del ZIP al repositorio, en particular access.js, styles.css, app.js, index.html y sw.js. Caché incrementada a 1.4.1.
-
-
-## Ajuste 1.4.2 · Entrada animada y distribución móvil
-
-- Entrada escalonada de logo, presentación, tarjetas y accesos inferiores. Termina a los 700 ms; no bloquea botones ni usa animaciones continuas. El símbolo decorativo acompaña la entrada y queda quieto.
-- La animación se aplica una sola vez por apertura/recarga de la página; no se repite al navegar hacia atrás o regresar desde la demo. No agrega claves ni registros de almacenamiento.
-- Con prefers-reduced-motion: reduce se desactivan todas las animaciones de entrada.
-- Bienvenida móvil distribuida en altura: presentación y tarjetas más amplias, accesos cerca del borde inferior y aviso/pie unificados. Se conservan los márgenes seguros de iPhone. Pantallas bajas o contenido ampliado pueden desplazarse normalmente.
-- Comprobados navegador a 390 × 844 y 320 × 640, ausencia de desborde horizontal, botones habilitados y regreso sin repetir la entrada. Pendiente prueba en iPhone instalado real.
-- Publicar todos los archivos del ZIP. Caché 1.4.2. Sin cambios al historial, planes ni autenticación de demostración.
-
-
-## Actualización 1.5.0 · Invitar alumno
-
-- Inicio y Alumnos del profesor ahora muestran Invitar alumno. Abren el mismo panel con nombre del profesor, capacidad actual del plan, QR, código ENT-DEMO, copiar código, copiar enlace y compartir por WhatsApp. El alta manual deja de ser la entrada desde estos botones; editar alumnos existentes se conserva.
-- El QR se calcula en el navegador con qr.js incluido, sin servicios externos. Codifica la raíz del dominio actual con ?profesor=ENT-DEMO; cambia automáticamente al publicar en Vercel. Mantiene cuatro módulos blancos de margen. No escanear la vista interna de revisión desde otro dispositivo: para probar en un teléfono usar la versión publicada.
-- Copiar código/enlace usa el portapapeles y ofrece selección manual si el navegador lo impide. WhatsApp abre un borrador para que el usuario elija a quién enviarlo; no envía automáticamente.
-- El panel explica el circuito futuro de solicitud y aprobación, y que el cupo se ocupa al aceptar. Si el profesor ya alcanzó el límite, muestra un aviso.
-- Esta versión solo presenta invitaciones de demostración. ENT-DEMO es compartido por esta prueba, no identifica una cuenta verificada. Las solicitudes pendientes, aprobación/rechazo, invitaciones personales y control de cupos del servidor quedan para la conexión de la base. No se crea ni vincula un alumno real con este panel.
-- Se conserva todo el guardado local anterior. No hay cambios al historial ni las medidas.
-- Verificación: panel revisado visualmente en PC antes de interrumpirse la sesión; pruebas de código de generación SVG, margen, enlace por dominio, borrador WhatsApp, copiado y cupo. La revisión visual móvil y escaneo con cámara real quedan pendientes porque el navegador de prueba bloqueó el acceso al reanudar.
-- Subir TODOS los archivos a GitHub, incluidos qr.js y QR-LICENSE.txt. Caché PWA incrementada a 1.5.0.
-
-
-## Ajuste 1.5.1 · Mensaje para compartir
-
-Se actualiza el borrador de WhatsApp con el saludo personal del profesor, invitación al equipo, enlace precedido por Sumarme al equipo, código y cierre motivador. Conserva saltos de línea y emojis. WhatsApp muestra la URL; no permite convertir el texto del borrador en un enlace con etiqueta distinta. El envío lo confirma el usuario en WhatsApp. Se mantienen los avisos de demostración dentro de la app. La bandeja Alumnos → Solicitudes pendientes, su contador y las aprobaciones reales siguen pendientes de la conexión de cuentas/base. La campanita del profesor continúa reservada a los comunicados del administrador.
-
-
-## Actualización 1.6.0 · Administración de Entrenar
-
-### Pantallas y comportamiento
-
-- Navegación principal del administrador: Resumen, Profesores, Facturación y Comunicados. Ajustes y copias se abren desde el nombre/avatar o el panel lateral. En celular el selector de rol queda en Ajustes → Vista de prueba.
-- Resumen: profesores activos de pago, en prueba, vencidos, pagos registrados según fecha de pago del mes actual, próximos vencimientos (7 días), suspendidos y fechas pendientes. Las cifras se calculan a partir de los datos locales; no se agregaron pagos ficticios.
-- Profesores: búsqueda por nombre/correo/WhatsApp, filtros por plan y estado, tarjetas y ficha con contactos, vencimiento, plan, pagos y mensajes. El conteo de alumnos solo está disponible para c1, el profesor de la demo; los demás muestran Sin sincronizar/—.
-- Alta y edición administrativa de profesores no crean credenciales. Permite cambiar el plan, tipo de suscripción de prueba/de pago, contactos y vencimiento. Suspendido conserva historial y no permite registrar una renovación hasta reactivarlo. El bloqueo de acceso real necesita el servidor.
-- Facturación: mes seleccionado por fecha de pago, importes registrados, profesores que pagaron e historial de pagos. Los abonos previstos corresponden a los profesores activos de pago actuales, separados de lo cobrado; si faltan precios se indica que es subtotal.
-- Planes y precios se abren desde Facturación o Resumen. Importes en ARS, guardados en centavos enteros. Permite coma o punto y hasta dos decimales, sin separadores de miles. Vacío mantiene precio sin definir; cero no renueva. Los precios se reflejan también en las tarjetas de planes de la demo y el acceso.
-- Registrar pago y renovar requiere revisar y confirmar profesor, importe, fecha, período, medio, referencia y observaciones. Guarda nombre/plan/importe históricos. Bloquea períodos superpuestos y doble confirmación. No cobra ni envía dinero.
-- Comunicados: todos los profesores, por plan o un profesor específico; revisión antes de publicar. Guarda destinatarios concretos al publicar. La campanita del profesor c1 filtra por destinatarios. Nunca escribe en avisos de alumnos ni realiza envíos externos.
-- Los comunicados anteriores sin destinatarios se interpretan como destinados a todos. Copias antiguas compatibles; se agregan campos sin borrar datos. Se validan precios, pagos, fechas y destinatarios al importar.
-
-### Validación
-
-Sintaxis de app.js, admin.js y access.js verificada. Pruebas de las seis vistas administrativas, importación anterior/nueva, formato e importes exactos, fechas inválidas y fin de período, renovación, doble confirmación, superposición, suspensión, precios sin alterar historial y segmentación de comunicados sin aviso a alumnos. La verificación visual final en navegador/Android/iPhone queda pendiente por el bloqueo de la herramienta de navegador de la sesión previa. El diseño usa tarjetas y formularios de una columna en celular, cuatro accesos inferiores y respeta safe areas; debe revisarse en los dispositivos reales.
-
-### Próximo paso: conexión de la base
-
-No se conectó ninguna base ni se aprovisionó un servicio. El selector de roles sigue siendo una demostración, no un control de acceso. Antes de usar datos reales, implementar autenticación, rol de administrador verificado por servidor, separación de profesores/alumnos y políticas de acceso; guardar planes y precios, suscripciones y vencimientos, pagos manuales con confirmación transaccional e idempotencia, comunicados con destinatarios, e invitaciones y solicitudes. Conservar snapshots de pagos y no borrar historial al suspender. Las medidas personales de alumnos no se exponen al administrador en este panel.
-
-### Publicación
-
-Subir TODO el contenido del ZIP a la raíz del repositorio, incluido el nuevo admin.js, además de qr.js. La caché PWA se incrementa a 1.6.0. El paquete conserva el logo, la bienvenida animada y el circuito anterior de profesor/alumno.
-
-
-## Corrección 1.6.1 · Administración simple y Facturación en celular
-
-- Inicio del administrador sin bloque verde motivacional, sin saludo protagonista ni eslogan lateral/pie. Muestra Resumen, métricas de profesores y pagos, próximos vencimientos y estado de profesores. Se mantienen profesores, planes/precios, facturación, comunicados y ajustes.
-- Facturación reemplaza el input month de iOS por dos selectores Mes/Año con etiquetas. Incluye años cercanos al actual y todos los años con pagos históricos. Conserva el mismo filtrado por fecha de pago.
-- En celular, el botón Planes y precios ocupa su propia fila debajo de los selectores. El importe registrado ocupa el ancho completo; las otras métricas se acomodan debajo, y en pantallas muy pequeñas pasan a una columna. Se reduce el espacio y el texto de estados vacíos.
-- No se modifican alumnos, profesores, importes, períodos ni pagos históricos. Las vistas de profesor/alumno mantienen sus frases.
-- Pruebas de administración anteriores y nuevas pasaron: inicio sin hero, controles Mes/Año y aplicación del período elegido. La revisión visual en Safari/PWA instalada sigue pendiente; este ajuste elimina el control nativo que causaba la superposición reportada.
-- Publicar todos los archivos del ZIP. Versión/caché 1.6.1.
-
-
-## Ajuste 1.6.2 · Tarjetas como accesos y entrada más perceptible
-
-- Métricas del profesor como botones accesibles: alumnos activos abre Alumnos con filtro activo, rutinas abre Rutinas, sesiones semanales lleva a Alumnos para consultar sus fichas e historial. Limpia búsquedas previas al entrar desde el acceso.
-- Métricas del resumen administrativo: activos, en prueba y vencidos abren Profesores con el filtro correspondiente; pagos del mes abre Facturación en el mes actual y su historial. Las filas de totales, suspendidos y sin vencimiento también abren sus filtros.
-- En Facturación: pagos abre el historial del período elegido; profesores que pagaron muestra ese grupo del mes; abonos previstos abre Planes y precios.
-- Se amplía el área del botón Ver ficha a toda la tarjeta del profesor/alumno; mantiene un único botón accesible, sin controles anidados. Efecto visual de foco/hover en tarjetas.
-- Animación de bienvenida pasa de 700 a 1200 ms, con entrada escalonada y desplazamiento suave de 20 px. Sigue una vez por apertura y sin bloquear botones. Se conserva prefers-reduced-motion y no se repite al volver.
-- Pruebas anteriores pasaron, además de destinos y filtros de tarjetas y navegación del profesor. La percepción visual final en dispositivos sigue pendiente de revisión.
-- Subir todos los archivos. Versión/caché 1.6.2. No modifica datos, pagos ni historial.
-
-
-## Actualización 1.7.0 · Historial y gesto de volver en iPhone
-
-- navigation.js agrega entradas de History API a pantallas y fichas, sin recargar. Atrás/Adelante del navegador restaura vista, filtros y desplazamiento; no agrega una nueva entrada al restaurar ni al renderizar la misma pantalla.
-- El acceso/registro también genera historial de pantallas. El botón Volver del acceso usa atrás cuando hay un recorrido previo. La bienvenida no vuelve a animarse al regresar. No se guardan contraseñas ni valores de formularios en el historial. La pantalla de resultado de registro se restaura como formulario al volver a recorrerla.
-- Safari normal usa el historial nativo. Para iPhone/iPad instalado, detectado mediante navigator.standalone === true, se agrega deslizamiento desde los primeros 24 px del borde izquierdo: al menos 90 px hacia la derecha, movimiento vertical máximo 45 px y hasta 1,2 segundos. No se activa desde el centro, formularios, botones, enlaces, tablas horizontales o modales; tampoco desde la raíz del recorrido. No se modifican estilos de scroll/touch globales.
-- Cambiar de rol o alumno de prueba establece una nueva raíz lógica para el gesto. Al abrir/recargar se inicia un recorrido nuevo; las vistas no son sesiones autenticadas.
-- Se conserva el guardado de entrenamientos e historial. Volver con el navegador cierra un modal abierto al restaurar la pantalla anterior; los formularios sin guardar no se persisten.
-- Pruebas de historial atrás/adelante, fichas, filtros y scroll, acceso, render sin entradas duplicadas, gesto válido y exclusiones. Todas las pruebas administrativas previas pasaron. El gesto nativo y su interacción física en Safari/PWA instalada requieren prueba real en iPhone; no se verificó en dispositivo físico.
-- Publicar TODOS los archivos, incluido navigation.js. Versión/caché 1.7.0. La conexión de base y cuentas reales sigue pendiente.
-
-
-## Corrección 1.7.1 · Límite del historial de cada demo
-
-Entrar a una demo establece su Inicio/Resumen como raíz independiente. Las pantallas de acceso quedan fuera de ese recorrido; volver atrás no restaura el selector de Alumno/Profesor. Cambiar de rol o alumno y usar explícitamente Volver al acceso también separa el historial anterior. Se cancela cualquier gesto en curso al recibir un popstate para evitar un segundo disparo desde el mismo deslizamiento. El gesto no actúa en la raíz.
-
-Pruebas de regresión para profesor, alumno y administrador: navegar y volver al inicio, intentar un retroceso adicional sin reaparecer el acceso ni cambiar de rol. Pruebas anteriores de navegación y administración pasaron. Falta comprobación física en iPhone. Versión/caché 1.7.1; publicar todo el ZIP, incluido navigation.js.
-
-
-## Corrección 1.7.2 · Revisión de todos los roles
-
-- Se guarda la raíz del rol actual y se comprueba que cada entrada de historial pertenezca al mismo rol/alumno y recorrido. Si un retroceso nativo de varias entradas cruza hacia el acceso u otra demo, se restaura Inicio del profesor/alumno o Resumen del administrador, sin volver al selector de roles.
-- Recorridos completos probados: profesor (Alumnos, ficha, Rutinas, Perfil), alumno (Mi rutina, entrenamiento, Progreso, Perfil), administrador (Profesores, ficha, Facturación, Planes, Comunicados). Se verifica cada paso hacia atrás y un salto directo a una entrada de acceso anterior desde una pantalla interna.
-- Todas las pruebas de navegación y administración anteriores pasan. No modifica cuentas ni datos. La comprobación física con el gesto de iPhone continúa pendiente.
-- Subir todo el ZIP y cerrar/reabrir la PWA para tomar 1.7.2. No borrar almacenamiento ni datos locales.
-
-
-## Corrección 1.8.0 · Recarga, recuperación y navegación real verificada
-
-Hallazgo reproducido en navegador: en la versión publicada 1.7.2, entrar como alumno, abrir Mi rutina y recargar devuelve a la bienvenida porque la demo no conservaba el rol abierto. En ese navegador Atrás sin recargar sí funcionó. No se reprodujo el gesto físico de iPhone, por lo que no se afirma que esa sea su causa exclusiva.
-
-- Cada pantalla de la demo ahora tiene una URL con fragmento propio (#/profesor/..., #/alumno/..., #/administrador/...). Sigue sin requerir reescrituras de Vercel.
-- El rol y la vista de demostración se guardan en sessionStorage durante esa apertura, sin contraseñas ni contenidos de formularios. Se recuperan al recargar y al restaurar desde la caché de páginas del navegador si reapareciera la bienvenida. Esto no es una sesión autenticada ni autorización.
-- Volver al acceso borra la navegación de la demo explícitamente. El enlace de invitación sigue teniendo prioridad cuando se abre como invitación; al entrar en la demo se consume el parámetro de invitación para que no se repita al recargar.
-- Recursos JS/CSS versionados con ?v=1.8.0. El fallback offline de caché admite esos parámetros. El almacenamiento de alumnos y pagos no se borra.
-- Verificación REAL en navegador de escritorio sobre la nueva vista local: profesor → Alumnos → recargar → Atrás mantiene profesor e Inicio; alumno → Mi rutina → recargar → Atrás mantiene alumno e Inicio; administrador → Facturación → recargar → Atrás mantiene administrador y Resumen. La versión pública se inspeccionó, no se modificó ni desplegó desde estas pruebas.
-- Pruebas de lógica anteriores completas, más recuperación de página (pageshow persisted) y limpieza de sesión al salir. Gesto físico y caché instalada de iPhone todavía requieren comprobación en el dispositivo.
-- Publicar TODO el contenido del ZIP y comprobar V1.8.0 en el pie de la demo. No borrar datos locales. Versión/caché 1.8.0.
+SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución. Licencia en SUPABASE-LICENSE.txt. QR local, sin servicio externo; licencia en QR-LICENSE.txt.
