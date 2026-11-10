@@ -1,4 +1,4 @@
-# Entrenar · V1.9.7 · Supabase
+# Entrenar · V1.9.8 · Supabase
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -11,7 +11,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.7.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.8.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -113,3 +113,9 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 ## Cambios V1.9.7
 
 - Se elimina el desplegable de plan al completar la cuenta. Ver planes y beneficios es el único acceso para elegir otro plan; se conserva el resumen del plan elegido. Sin SQL nuevo.
+
+## Cambios V1.9.8
+
+- Mensajes de revisión de cuenta y equipo de Entrenar para alumnos/profesores, sin referencias al administrador. Estados de vencimiento o suspensión conservados.
+- Agregá Entrenar a tu pantalla de inicio en confirmación de correo, finalización del registro y cuentas pendientes de ambos roles. Usa la instalación nativa cuando el navegador la ofrece; instrucciones para iPhone/iPad, Android o PC en los demás casos. No instala sin confirmación del usuario.
+- La ayuda aparece dentro de la pantalla sin perder datos del registro. Se oculta si se detecta la app instalada. Sin SQL nuevo.
