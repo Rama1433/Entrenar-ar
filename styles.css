@@ -186,3 +186,6 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @keyframes app-chrome-arrive{from{opacity:.2}to{opacity:1}}
 .app-opening #main{animation:app-main-arrive 850ms cubic-bezier(.2,.7,.2,1) 90ms both}.app-opening :is(#topbar,#sidebar,#mobile-nav){animation:app-chrome-arrive 650ms ease-out both}
 @media(prefers-reduced-motion:reduce){.app-opening :is(#main,#topbar,#sidebar,#mobile-nav){animation:none}}
+.cloud-live .demo-strip {
+  display: none;
+}
