@@ -151,11 +151,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.4 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.5 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.4</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.5</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -164,10 +164,11 @@
   for(const b of main.querySelectorAll('[data-action="select-plan"]')){b.textContent=b.dataset.id===state.coach.plan?'Tu plan actual':'Consultar al administrador';b.disabled=b.dataset.id===state.coach.plan;}
   if(role==='admin'){
    const sidebar=$('#sidebar .sidebar-card');if(sidebar)sidebar.innerHTML='<div class="eyebrow">TU ADMINISTRACIÓN</div><h3>Configuración</h3><button class="btn outline full" data-page="Planes">Planes y precios</button>';
+   const accountSettings=main.querySelector('[data-admin-action="settings"]');if(accountSettings)accountSettings.textContent='Mi cuenta';
    const create=main.querySelector('[data-admin-action="new"]');if(create)create.remove();
    const edit=main.querySelector('[data-admin-action="edit"]');if(edit)edit.textContent='Editar plan y estado';
    if(page==='Profesores'&&!state.adminCoaches.length)main.insertAdjacentHTML('beforeend','<p class="subtle">Los profesores aparecerán acá cuando confirmen su correo y completen su registro. Después podés activar su prueba o plan desde su ficha.</p>');
-   if(page==='Ajustes')main.innerHTML=heading('TU CUENTA','Administración','Tu acceso y los planes de Entrenar.')+`<section class="panel"><div class="panel-content"><h2>${esc(personal?.full_name||'Administrador')}</h2><p>${esc(user.email)}</p><div class="btns"><button class="btn outline" data-cloud="profile">Editar mis datos</button><button class="btn outline" data-page="Planes">Planes y precios</button></div></div></section>`;
+   if(page==='Ajustes')main.innerHTML=heading('TU CUENTA','Mi cuenta','Tu acceso y los planes de Entrenar.')+`<section class="panel"><div class="panel-content"><h2>${esc(personal?.full_name||'Administrador')}</h2><p>${esc(user.email)}</p><div class="btns"><button class="btn outline" data-cloud="profile">Editar mis datos</button><button class="btn outline" data-page="Planes">Planes y precios</button></div></div></section>`;
   }
   if(role==='coach'){
    if(!isCoachActive()&&!['Perfil','Mi plan','Notificaciones'].includes(page))main.innerHTML=heading('TU CUENTA','Tu plan necesita activación','El administrador debe activar tu prueba o renovar tu suscripción.')+`<section class="panel"><div class="panel-content"><p>Estado: ${esc(subscription?.status==='suspended'?'Suspendido':subscription?.ends_on&&subscription.ends_on<today()?'Vencido':'Pendiente')}</p><button class="btn outline" data-page="Perfil">Ver mi perfil</button><button class="btn primary" data-cloud="refresh">Comprobar activación</button></div></section>`;
@@ -187,7 +188,7 @@
   const accountCard=role==='admin'&&page==='Ajustes'?main.querySelector('.panel-content'):page==='Perfil'?main.querySelector('.profile-card'):null;
   if(accountCard)accountCard.insertAdjacentHTML('beforeend','<div class="profile-session-actions"><p class="note-text">Tu sesión en Entrenar</p><button type="button" class="btn outline profile-exit" data-cloud="ask-logout">Salir</button></div>');
  }
- render=function(...args){if(live)role=myRole;const result=baseRender(...args);postRender();return result;};
+ render=function(...args){if(live)role=myRole;else if(!['coach','student'].includes(role)){role='coach';page='Inicio';detailId=null;search='';filter='all';}const result=baseRender(...args);postRender();return result;};
  coachInboxNotices=function(){return live?state.coachNotices.filter(n=>n.recipientIds.includes(user.id)):baseInbox();};
  save=function(){if(!live)return demoSave();try{sessionStorage.setItem(draftStorageKey(user.id),JSON.stringify({drafts:state.drafts,readStudentNotices:state.readStudentNotices}));return true;}catch{toast('Tu avance queda en esta pestaña. Guardá el entrenamiento antes de cerrarla.');return false;}}; // Remote records never enter the demo's localStorage.
  function adminCommitPayment(p){needRole('admin');return run(()=>rpc('ent_admin_record_payment',{p_operation:p.id,p_coach:p.coachId,p_amount_cents:p.amountCents,p_paid_on:p.paidAt,p_start:p.start,p_end:p.end,p_method:p.method,p_reference:p.reference,p_note:p.note}),'Pago registrado y período renovado.');}

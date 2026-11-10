@@ -197,6 +197,12 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 /* V1.9.4 · Only QR, code, copy code and WhatsApp */
 .invitation-panel .invitation-code>.btn{margin-top:14px}.invitation-panel .invitation-qr{display:grid;place-items:center}.invitation-panel .invitation-qr-image{margin-bottom:0}
 
+/* V1.9.5 · Bound QR to its grid cell and keep admin account/exit accessible */
+.invitation-panel .invitation-qr{min-width:0;padding:14px;justify-items:center}.invitation-panel .invitation-qr .cloud-qr{width:100%;max-width:220px;min-width:0;margin:0 auto;aspect-ratio:1}.invitation-panel .invitation-qr .cloud-qr svg{display:block;width:100%;max-width:100%;height:auto}.invitation-panel .invitation-code{min-width:0}
+.cloud-live[data-role="admin"] #topbar .admin-profile-trigger{display:flex;min-width:36px;min-height:44px;align-items:center;justify-content:center}
+@media(max-width:700px){.invitation-panel .invitation-qr .cloud-qr{max-width:176px}.cloud-live[data-role="admin"] #topbar .cloud-exit{display:inline-flex;min-height:40px}.cloud-live[data-role="admin"] #topbar .top-actions{gap:8px}}
+@media(max-width:360px){.cloud-live[data-role="admin"] #topbar .mobile-brand .brand-logo{width:118px}.cloud-live[data-role="admin"] #topbar .top-actions{gap:6px}.cloud-live[data-role="admin"] #topbar .admin-profile-trigger .avatar{width:33px;height:33px}}
+
 .cloud-live .demo-strip {
   display: none;
 }

@@ -8,8 +8,8 @@
  const rootKey='entrenarNavigation';
  const sessionKey='entrenar-demo-navigation';
  let initialAccess=true;
- function loadDemo(){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return null;try{const v=JSON.parse(sessionStorage.getItem(sessionKey)||'null');return v?.mode==='app'&&!v.accountId&&['coach','student','admin'].includes(v.role)&&typeof v.page==='string'?v:null;}catch{return null;}}
- function storeDemo(v){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return;try{if(v.mode==='app')sessionStorage.setItem(sessionKey,JSON.stringify(v));else sessionStorage.removeItem(sessionKey);}catch{}}
+ function loadDemo(){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return null;try{const v=JSON.parse(sessionStorage.getItem(sessionKey)||'null');if(v?.role==='admin'){sessionStorage.removeItem(sessionKey);return null;}return v?.mode==='app'&&!v.accountId&&['coach','student'].includes(v.role)&&typeof v.page==='string'?v:null;}catch{return null;}}
+ function storeDemo(v){if(window.EntrenarCloud?.live||window.EntrenarCloud?.checking)return;try{if(v.mode==='app'&&!v.accountId&&['coach','student'].includes(v.role))sessionStorage.setItem(sessionKey,JSON.stringify(v));else sessionStorage.removeItem(sessionKey);}catch{}}
  function viewUrl(v){const url=new URL(window.location.href||window.location.origin+'/');if(v.mode==='app'){url.searchParams.delete('profesor');const roles={coach:'profesor',student:'alumno',admin:'administrador'};url.hash='/'+roles[v.role]+'/'+encodeURIComponent(v.page.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ /g,'-'))+(v.detailId?'/'+encodeURIComponent(v.detailId):'');}else url.hash='';return url.href;}
 
  const baseRender=render,baseNavigate=navigate;
@@ -38,6 +38,7 @@
  render=function(...args){const result=baseRender(...args);if(!isAccess())commit();return result;};
  function restoreView(v){
   if(window.EntrenarCloud?.live&&(v.mode!=='app'||v.accountId!==window.EntrenarCloud.accountId||v.role!==window.EntrenarCloud.role))return;
+  if(!window.EntrenarCloud?.live&&v.mode==='app'&&!['coach','student'].includes(v.role))Object.assign(v,{role:'coach',page:'Inicio',detailId:null,search:'',filter:'all',admin:null,accountId:null});
   if(modal.open)modal.close();
   if(v.mode==='access')window.EntrenarAccessNavigation?.restore(v.access);
   else{
