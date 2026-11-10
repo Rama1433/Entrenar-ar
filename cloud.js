@@ -22,7 +22,7 @@
   const result=[];for(let offset=0;;offset+=500){const rows=check(await client.from(table).select('*').order(order).range(offset,offset+499));result.push(...rows);if(rows.length<500)return result;}
  }
  const dateAR=value=>new Date(value).toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'});
- function friendly(e){const m=e?.message||'';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
+ function friendly(e){const m=e?.message||'';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/ent_get_invitation/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 04 de invitaciones cortas en Supabase.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
  function credentials(data){const email=String(data.get('email')||'').trim(),password=String(data.get('password')||'');if(!email||!password)throw Error('Completá correo y contraseña.');return {email,password};}
  function needRole(expected){if(!live||myRole!==expected)throw Error('Tu cuenta no tiene permiso para esa operación.');}
  function isCoachActive(){return subscription&&['trial','active'].includes(subscription.status)&&subscription.ends_on>=today();}
@@ -81,7 +81,7 @@
  }
  async function enter(session){
   const remembered=window.history.state?.entrenarNavigation?.view;
-  const g=++generation;checking=true;invitation=null;state=blank();user=session.user;myRole=null;live=false;
+  const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
   try{
    const result=await client.auth.getUser();const verified=check(result)?.user;if(!verified||g!==generation)return;
@@ -112,7 +112,7 @@
  }
  async function logout(){
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
-  ++generation;live=false;checking=true;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
+  ++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
   sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
@@ -124,25 +124,38 @@
  }
  function profileForm(){const p=personal||{};openModal('Mis datos','El cambio de correo se confirma desde tu email.',`<form id="cloud-profile">${field('Nombre y apellido','name',p.full_name||'','text','required minlength="2" maxlength="80"')}${field('WhatsApp con código de país','whatsapp',p.whatsapp||'','tel','required maxlength="25"')}${actions('Guardar datos')}</form><hr><form id="cloud-email">${field('Nuevo correo','email',user.email||'','email','required maxlength="254"')}${actions('Solicitar cambio de correo')}</form>`);}
  function linkForm(){openModal('Vincularme con un profesor','Ingresá el código que te compartió.',`<form id="cloud-link">${field('Código del profesor','code',pendingCode,'text','required maxlength="40" autocomplete="off"')}${actions('Revisar profesor')}</form>`);}
+ function invitationLinkValue(){const link=new URL('/',window.location.origin);link.searchParams.set('profesor',invitation.code);return link.href;}
+ function invitationText(){return invitationMessage(state.coach.name,invitationLinkValue(),invitation.code);}
  function drawInvitation(){
-  const link=new URL('/',window.location.origin);link.searchParams.set('profesor',invitation.code);
-  const text=`¡Hola, soy el profe ${state.coach.name} 👋!\n\nTe invito a mi equipo en Entrenar.\nSumarme al equipo: ${link.href}\nO ingresá el código ${invitation.code}.\n\n¡Creá tu cuenta y listo, a entrenar 💪!`;
-  openModal('Invitar alumno','Compartí el QR o el código. Vence en 7 días.',`<div class="invitation-panel"><div class="invitation-methods"><section class="invitation-qr"><div id="cloud-qr" class="cloud-qr"></div><h3>Escaneá y empezá</h3></section><section class="invitation-code"><span class="eyebrow">CÓDIGO DE VINCULACIÓN</span><strong class="invitation-code-value cloud-code">${esc(invitation.code)}</strong><button class="btn outline full" data-cloud="copy-code">Copiar código</button><a class="btn primary full" href="https://wa.me/?text=${esc(encodeURIComponent(text))}" target="_blank" rel="noopener noreferrer">Compartir por WhatsApp</a><button class="btn outline full" data-cloud="copy-link">Copiar enlace</button></section></div><label>Enlace de invitación<input id="cloud-invite-link" value="${esc(link.href)}" readonly></label><p class="note-text">El alumno crea su cuenta y queda pendiente hasta que lo apruebes. Generar otra invitación invalida la anterior.</p><button class="btn outline" data-cloud="renew-code">Generar otro código</button></div>`);
-  $('#cloud-qr').innerHTML=window.EntrenarQR(link.href).replace('QR de invitación de prueba','QR para sumarte al equipo');
+  const link=invitationLinkValue(),text=invitationText();
+  openModal('Invitar alumno','Compartí el QR o el código para sumar a tu equipo.',`<div class="invitation-panel"><div class="invitation-methods"><section class="invitation-qr"><div id="cloud-qr" class="cloud-qr"></div></section><section class="invitation-code"><span class="eyebrow">CÓDIGO DE VINCULACIÓN</span><strong class="invitation-code-value cloud-code">${esc(invitation.code)}</strong><button type="button" class="btn outline full" data-cloud="copy-code">Copiar código</button><a class="btn primary full" href="https://wa.me/?text=${esc(encodeURIComponent(text))}" target="_blank" rel="noopener noreferrer">Compartir por WhatsApp</a></section></div></div>`);
+  $('#cloud-qr').innerHTML=window.EntrenarQR(link).replace('QR de invitación de prueba','QR para sumarte al equipo');
  }
- async function invite(renew=false){
-  needRole('coach');if(invitation&&!renew)return drawInvitation();
-  if(busy)return;busy=true;try{const code=await rpc('ent_create_invitation');invitation={code};drawInvitation();}catch(e){toast(friendly(e));}finally{busy=false;}
+ async function invite(){
+  needRole('coach');if(busy)return;
+  busy=true;const g=generation;const uid=user.id;
+  try{
+   const rows=await rpc('ent_get_invitation',{p_renew:false});
+   if(g!==generation||uid!==user?.id||!live)return;
+   const current=rows?.[0];if(!current||!/^ENT-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}$/.test(current.code)||!Number.isFinite(Date.parse(current.expires_at)))throw Error('No pudimos obtener una invitación vigente. Intentá nuevamente.');
+   invitation=current;drawInvitation();
+  }catch(e){if(g===generation)toast(friendly(e));}finally{if(g===generation)busy=false;}
+ }
+ async function copyLiveCode(){
+  if(!invitation)return;
+  const value=invitation.code;
+  try{if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');await navigator.clipboard.writeText(value);toast('Código copiado.');}
+  catch{openModal('Copiar código','Mantené presionado el código para copiarlo.',`<input id="invitation-copy-value" readonly aria-label="Código para copiar" value="${esc(value)}"><div class="form-actions">${btn('Cerrar','close-modal','primary')}</div>`);$('#invitation-copy-value').focus();$('#invitation-copy-value').select();}
  }
  function postRender(){
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.2 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.4 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.2</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.4</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -247,8 +260,8 @@
    if(a==='profile')return profileForm();
    if(a==='approve'||a==='reject')return run(()=>rpc('ent_review_membership',{p_membership:cid,p_accept:a==='approve'}),a==='approve'?'Alumno aprobado.':'Solicitud rechazada.');
    if(a==='suspend'){const c=state.adminCoaches.find(c=>c.id===cid);return run(()=>rpc('ent_admin_set_subscription',{p_coach:cid,p_plan:c.plan,p_status:'suspended',p_ends_on:c.expiresAt||null}),'Profesor suspendido.');}
-   if(a==='link')return linkForm();if(a==='renew-code')return invite(true);
-   if(a==='copy-code'||a==='copy-link'){const value=a==='copy-code'?invitation?.code:$('#cloud-invite-link')?.value;if(value)navigator.clipboard.writeText(value).then(()=>toast('Copiado.')).catch(()=>toast('Mantené presionado el código o el enlace para copiarlo.'));return;}
+   if(a==='link')return linkForm();
+   if(a==='copy-code')return copyLiveCode();
   }
   if(checking){if(e.target.closest('[data-access],[data-page],[data-action],[data-admin-action]')){e.preventDefault();e.stopImmediatePropagation();}return;}
   if(!live)return;

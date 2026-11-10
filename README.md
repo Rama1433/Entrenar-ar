@@ -1,17 +1,17 @@
-# Entrenar · V1.9.2 · Supabase
+# Entrenar · V1.9.4 · Supabase
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
 ## Activar esta versión (en este orden)
 
-1. En el proyecto Supabase de Entrenar, ejecutá **Entrenar_03_Conexion_App.sql** en SQL Editor. Se entrega aparte. Ejecutalo una vez. **No vuelvas a ejecutar los SQL 01 y 02**: ya están aplicados y tu administrador está creado.
+1. En el proyecto Supabase de Entrenar, con los SQL 01, 02 y 03 ya aplicados, ejecutá **Entrenar_04_Invitaciones_Cortas.sql** en SQL Editor. Se entrega aparte. Si venís de V1.9.2, solo necesitás este SQL 04. **No vuelvas a ejecutar los SQL 01 y 02**: ya están aplicados y tu administrador está creado.
 2. En Supabase → Authentication → URL Configuration:
    - Site URL: `https://entrenar-ar.vercel.app/`
    - Redirect URLs: `https://entrenar-ar.vercel.app/` y `https://entrenar-ar.vercel.app/?recuperar=1`.
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.2.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.4.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -28,7 +28,7 @@ Referencias: https://supabase.com/docs/guides/auth/auth-smtp y https://supabase.
 
 - Profesor: elige plan, crea cuenta y confirma correo. Completa nombre y WhatsApp. Aparece en **Profesores**, pendiente de activación.
 - Administrador: abre la ficha del profesor → **Editar plan y estado** → En prueba o Activo y fecha de vencimiento. No se cobra automáticamente. Puede suspender conservando el historial.
-- Profesor activo: **Invitar alumno** genera un código y QR válido por 7 días. Se reutiliza mientras está abierto el mismo acceso; generar otro invalida el anterior. Comparte por WhatsApp o copia el enlace/código.
+- Profesor activo: **Invitar alumno** obtiene un código corto y QR válidos por 7 días. La invitación vigente se recupera desde cualquier dispositivo del profesor; si venció, se genera una nueva al abrir el panel. Generar otro manualmente invalida el anterior. Comparte por WhatsApp o copia el enlace/código.
 - Alumno: revisa el nombre del profesor, crea y confirma su cuenta (o ingresa si ya tiene cuenta). Completa su perfil. La vinculación queda pendiente.
 - Profesor: ve las solicitudes en **Inicio y Alumnos**, y aprueba o rechaza. El cupo se ocupa al aprobar y se controla en la base. Un alumno tiene una sola vinculación pendiente/aprobada a la vez.
 - Profesor: crea ejercicios, guarda rutinas completas en una operación y las asigna a sus alumnos aprobados. Puede actualizar objetivo, días y notas de la ficha. El alumno edita su propio nombre y contacto.
@@ -74,3 +74,23 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - La comprobación inicial de sesión ya no reemplaza la bienvenida recién dibujada ni interrumpe su animación.
 - Entrada breve del panel cuando se abre con sesión iniciada o se entra a una demo. Solo una vez por apertura, sin repetirse al navegar ni al actualizar los datos. Respeta la preferencia de reducir movimiento.
 - Sin cambios de base de datos ni SQL.
+
+## Cambios V1.9.3 · Invitaciones
+
+- Código de 8 caracteres aleatorios después de ENT-, sin los caracteres 0, 1, O e I para evitar confusiones.
+- El panel muestra QR, código, Copiar código, Compartir por WhatsApp y Copiar invitación. Se oculta el campo con el enlace largo.
+- Copiar invitación copia el mensaje completo con nombre del profesor, enlace y código. Si el navegador no permite copiar, ofrece el texto para seleccionarlo manualmente.
+- La vigencia real y la reutilización se resuelven en Supabase, no con la hora del celular. Abrir el panel no reinicia los 7 días de una invitación todavía vigente. Después de vencer se genera otra al abrir el panel, sin tareas programadas ni cargos.
+- Generar otro código pide confirmación dentro de la app; invalida el QR/código anteriores y conserva los alumnos y solicitudes ya recibidas.
+- Los códigos anteriores de 32 caracteres siguen funcionando hasta su vencimiento o hasta que el profesor obtenga la primera invitación corta. Ese cambio no altera las vinculaciones existentes.
+- El SQL 04 agrega el código compartible en la tabla privada de invitaciones para recuperarlo desde otros dispositivos. Ningún cliente tiene SELECT sobre esa tabla; la función solo devuelve la invitación del profesor autenticado con plan vigente. El código no inicia sesión ni permite consultar datos de alumnos.
+- Se mantiene oculta la franja Cuenta conectada, conforme al ajuste solicitado.
+- Aplicar SQL 04 antes de publicar este ZIP. No repetir SQL 01, 02 ni 03 si ya están aplicados.
+
+## Cambios V1.9.4 · Panel de invitación mínimo
+
+- Solo QR, código de vinculación, Copiar código y Compartir por WhatsApp, tanto en cuenta real como en demo.
+- Se quitaron Copiar enlace/Copiar invitación, el campo con la dirección y los bloques adicionales del panel.
+- La validez de 7 días y la renovación al abrir el panel después de vencer siguen funcionando en la base.
+- La regla `.cloud-live .demo-strip { display: none; }` está al final de styles.css.
+- No requiere otro SQL: se mantiene el SQL 04 de la versión anterior.
