@@ -86,7 +86,7 @@
   const meta=user?.user_metadata||{},kind=registrationRole();
   const selectedPlan=plans.some(p=>p.id===meta.requested_plan)?meta.requested_plan:'inicial';
   const accountField=kind?`<label>Tipo de cuenta<input value="${kind==='coach'?'Profesor':'Alumno'}" readonly aria-readonly="true"></label><p class="access-hint onboard-role-hint">Es el perfil que elegiste al registrarte.</p>`:`<label>Tipo de cuenta<select name="kind"><option value="student">Alumno</option><option value="coach">Profesor</option></select></label>`;
-  const planField=`<section id="onboard-coach-plans" ${kind==='student'||!kind?'hidden':''}><label>Plan<select name="plan" id="onboard-plan">${plans.map(p=>`<option value="${p.id}" ${selectedPlan===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select></label><details class="onboard-plan-review"><summary>Ver planes y beneficios</summary><div class="onboard-plan-grid">${plans.map(p=>`<article class="access-plan-card ${selectedPlan===p.id?'selected':''}" data-onboard-plan="${p.id}"><h2>${esc(p.name)}</h2><p class="access-plan-capacity">${p.limit?'Hasta <strong>'+p.limit+'</strong> alumnos activos':'Equipos y más de 30 alumnos'}</p><ul class="access-plan-features">${['Rutinas personalizadas','Biblioteca de ejercicios','Seguimiento y progreso','Avisos para tus alumnos'].map(text=>`<li>${icon('check')}<span>${text}</span></li>`).join('')}</ul><p class="access-price" data-onboard-price="${p.id}">${api.planPriceLabel(p.id)}</p><p class="access-billing">Abono mensual</p><button type="button" class="access-plan-select" data-cloud="onboard-plan" data-id="${p.id}" aria-pressed="${selectedPlan===p.id}">${selectedPlan===p.id?'Plan seleccionado':'Elegir este plan'}</button></article>`).join('')}</div></details><p id="onboard-plan-status" class="access-hint" role="status">Plan elegido: ${esc(plans.find(p=>p.id===selectedPlan).name)}.</p><p class="access-hint">Esta selección no realiza cobros. El administrador activará tu prueba o plan.</p></section>`;
+  const planField=`<section id="onboard-coach-plans" ${kind==='student'||!kind?'hidden':''}><input type="hidden" name="plan" id="onboard-plan" value="${selectedPlan}"><details class="onboard-plan-review"><summary>Ver planes y beneficios</summary><div class="onboard-plan-grid">${plans.map(p=>`<article class="access-plan-card ${selectedPlan===p.id?'selected':''}" data-onboard-plan="${p.id}"><h2>${esc(p.name)}</h2><p class="access-plan-capacity">${p.limit?'Hasta <strong>'+p.limit+'</strong> alumnos activos':'Equipos y más de 30 alumnos'}</p><ul class="access-plan-features">${['Rutinas personalizadas','Biblioteca de ejercicios','Seguimiento y progreso','Avisos para tus alumnos'].map(text=>`<li>${icon('check')}<span>${text}</span></li>`).join('')}</ul><p class="access-price" data-onboard-price="${p.id}">${api.planPriceLabel(p.id)}</p><p class="access-billing">Abono mensual</p><button type="button" class="access-plan-select" data-cloud="onboard-plan" data-id="${p.id}" aria-pressed="${selectedPlan===p.id}">${selectedPlan===p.id?'Plan seleccionado':'Elegir este plan'}</button></article>`).join('')}</div></details><p id="onboard-plan-status" class="access-hint" role="status">Plan elegido: ${esc(plans.find(p=>p.id===selectedPlan).name)}.</p><p class="access-hint">Esta selección no realiza cobros. El administrador activará tu prueba o plan.</p></section>`;
   accessPanel('Completá tu cuenta','Revisá tus datos antes de confirmar. Tu correo ya está vinculado a esta cuenta.',`<form id="cloud-onboard">${accountField}<label>Nombre y apellido<input name="name" value="${esc(meta.full_name||'')}" maxlength="80" required></label><label>WhatsApp con código de país<input name="whatsapp" type="tel" value="${esc(meta.whatsapp||'')}" required></label>${planField}<button class="access-btn" type="submit">Completar cuenta</button></form><button class="access-text" data-cloud="logout">Salir</button>`);
   if(kind==='coach')$('#access .access-layout').classList.add('access-onboarding');
   const g=generation,uid=user.id;
@@ -164,11 +164,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.6 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.7 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.6</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.7</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -267,7 +267,7 @@
  window.addEventListener('click',e=>{
   const c=e.target.closest('[data-cloud]');
   if(c){e.preventDefault();e.stopImmediatePropagation();const a=c.dataset.cloud,cid=c.dataset.id;
-   if(a==='onboard-plan'){if(!$('#cloud-onboard')||registrationRole()==='student')return;updateOnboardPlan(cid);const details=$('.onboard-plan-review');details.open=false;$('#onboard-plan').focus();return;}
+   if(a==='onboard-plan'){if(!$('#cloud-onboard')||registrationRole()==='student')return;updateOnboardPlan(cid);const details=$('.onboard-plan-review');details.open=false;details.querySelector('summary').focus();return;}
    if(a==='ask-logout')return openModal('¿Querés salir?','Tus datos guardados quedan en tu cuenta.',`<div class="form-actions">${btn('Cancelar','close-modal','outline')}<button class="btn primary" data-cloud="logout">Salir</button></div>`);
    if(a==='logout')return logout();
    if(a==='retry')return client.auth.getSession().then(({data})=>data.session?enter(data.session):(started=false,api.start()));
@@ -283,7 +283,7 @@
   if(e.target.closest('[data-access]')){e.preventDefault();e.stopImmediatePropagation();toast('Para cambiar de cuenta, primero tocá Salir.');return;}
   const b=e.target.closest('[data-action],[data-admin-action]');if(b&&clickLive(b)){e.preventDefault();e.stopImmediatePropagation();}
  },true);
- window.addEventListener('change',e=>{if(e.target.id==='onboard-plan')updateOnboardPlan(e.target.value);if(e.target.closest('#cloud-onboard')&&e.target.name==='kind'&&!registrationRole())$('#onboard-coach-plans').hidden=e.target.value!=='coach';if((live||checking)&&['role','profile-role','student-select','mobile-role','import-file'].includes(e.target.id)){e.preventDefault();e.stopImmediatePropagation();}},true);
+ window.addEventListener('change',e=>{if(e.target.closest('#cloud-onboard')&&e.target.name==='kind'&&!registrationRole())$('#onboard-coach-plans').hidden=e.target.value!=='coach';if((live||checking)&&['role','profile-role','student-select','mobile-role','import-file'].includes(e.target.id)){e.preventDefault();e.stopImmediatePropagation();}},true);
  window.addEventListener('submit',e=>{
   const f=e.target;if(f.id==='cloud-onboard'){
    e.preventDefault();e.stopImmediatePropagation();if(busy)return;busy=true;const d=new FormData(f);
