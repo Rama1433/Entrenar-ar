@@ -177,3 +177,12 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @media(max-width:700px){.access-login-primary{min-height:54px;margin-top:20px;font-size:15px}.access-screen-welcome .access-choice strong{font-size:16px;line-height:1.35}.access-screen-welcome .access-welcome-actions{margin-top:0}}
 @media(max-width:360px){.access-screen-welcome .access-choice strong{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.pull-refresh-icon{transition:none}.pull-refresh.loading .pull-refresh-icon{animation:none}}
+
+/* V1.9.2: mobile sign-out in the profile; opening animation once per launch. */
+.profile-session-actions{display:none;border-top:1px solid var(--line);margin-top:22px;padding-top:18px;align-items:center;justify-content:space-between;gap:16px}.profile-session-actions .note-text{margin:0}.profile-exit{min-width:90px;color:#8d4236;border-color:#e4d4ca!important;background:#fff}
+@media(max-width:700px){.cloud-live #topbar .cloud-exit{display:none}.profile-session-actions{display:flex}body.cloud-live:is([data-role="coach"],[data-role="student"]) .profile-trigger-text{max-width:100px;min-width:0}}
+@media(max-width:360px){body.cloud-live:is([data-role="coach"],[data-role="student"]) .profile-trigger-text{max-width:78px}}
+@keyframes app-main-arrive{from{opacity:.12;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes app-chrome-arrive{from{opacity:.2}to{opacity:1}}
+.app-opening #main{animation:app-main-arrive 850ms cubic-bezier(.2,.7,.2,1) 90ms both}.app-opening :is(#topbar,#sidebar,#mobile-nav){animation:app-chrome-arrive 650ms ease-out both}
+@media(prefers-reduced-motion:reduce){.app-opening :is(#main,#topbar,#sidebar,#mobile-nav){animation:none}}

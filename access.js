@@ -36,7 +36,7 @@
     role = nextRole; page = 'Inicio'; detailId = null; search = ''; filter = 'all';
     if (nextRole === 'student' && !selectedStudent()) studentId = state.students[0]?.id || '';
     root.hidden = true; root.replaceChildren();
-    document.body.classList.remove('access-open'); render(); window.scrollTo(0, 0);
+    document.body.classList.remove('access-open'); render(); window.EntrenarCloud.animateOpening(); window.scrollTo(0, 0);
     main.focus({preventScroll: true});
   }
   document.addEventListener('click', event => {

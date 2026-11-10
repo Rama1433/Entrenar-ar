@@ -8,7 +8,8 @@
  let user=null,live=false,checking=true,started=false,authBusy=false,busy=false,recovery=false,generation=0;
  let myRole=null,subscription=null,memberships=[],pendingCode='',invitation=null;
  const publicPrices={};
- let personal=null,refreshTask=null,refreshAgain=false,lastRefresh=0;
+ let personal=null,refreshTask=null,refreshAgain=false,lastRefresh=0,openingPlayed=false;
+ function animateOpening(){if(openingPlayed)return;openingPlayed=true;document.body.classList.add('app-opening');setTimeout(()=>document.body.classList.remove('app-opening'),1100);}
  const demoSave=save,baseRender=render,baseInbox=coachInboxNotices;
  const demoStrip=$('.demo-strip').innerHTML,demoFooter=$('.page-footer').innerHTML;
  const draftStorageKey=uid=>'entrenar-session:'+uid;
@@ -98,7 +99,7 @@
    }
    checking=false;window.EntrenarAccessNavigation?.hide();sessionStorage.removeItem('entrenar-demo-navigation');
    window.dispatchEvent(new CustomEvent('entrenar:account-changed'));
-   render();window.EntrenarAccountResume?.(remembered);window.scrollTo(0,0);
+   render();window.EntrenarAccountResume?.(remembered);animateOpening();window.scrollTo(0,0);
   }catch(e){if(g===generation)accessPanel('No pudimos cargar tu cuenta',friendly(e),'<button class="access-btn" data-cloud="retry">Reintentar</button><button class="access-text" data-cloud="logout">Salir</button>');}
   finally{if(g===generation)checking=false;}
  }
@@ -113,7 +114,7 @@
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
   ++generation;live=false;checking=true;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
-  sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live');
+  sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
   state=localDemo();upgradeState();role='coach';page='Inicio';detailId=null;studentId=state.students[0]?.id||'';checking=false;
   window.EntrenarAccessNavigation?.restore({screen:'welcome'});window.dispatchEvent(new CustomEvent('entrenar:account-changed'));
@@ -137,11 +138,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.1 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.2 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.1</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.2</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -170,6 +171,8 @@
    if(page==='Progreso'){renderStudentProgress(selectedStudent(),sessionsFor(user.id));for(const p of main.querySelectorAll('.note-text'))if(p.textContent.startsWith('Estos datos son opcionales'))p.textContent='Tus medidas son opcionales y personales. Solo vos podés verlas.';}
    if(page==='Perfil'&&!active)main.insertAdjacentHTML('beforeend','<p class="subtle">La información de contacto del profesor estará disponible con la vinculación aprobada y su plan vigente.</p>');
   }
+  const accountCard=role==='admin'&&page==='Ajustes'?main.querySelector('.panel-content'):page==='Perfil'?main.querySelector('.profile-card'):null;
+  if(accountCard)accountCard.insertAdjacentHTML('beforeend','<div class="profile-session-actions"><p class="note-text">Tu sesión en Entrenar</p><button type="button" class="btn outline profile-exit" data-cloud="ask-logout">Salir</button></div>');
  }
  render=function(...args){if(live)role=myRole;const result=baseRender(...args);postRender();return result;};
  coachInboxNotices=function(){return live?state.coachNotices.filter(n=>n.recipientIds.includes(user.id)):baseInbox();};
@@ -218,7 +221,7 @@
  }
  const api={
   get canRefresh(){return live&&!checking&&!busy&&!refreshTask&&!recovery;},get live(){return live;},get checking(){return checking;},get accountId(){return live?user?.id:null;},get role(){return myRole;},get displayName(){return personal?.full_name||'Administrador';},
-  mapData,refresh,friendly,adminCommitPayment,adminCommitMessage,
+  mapData,refresh,friendly,adminCommitPayment,adminCommitMessage,animateOpening,
   planPriceLabel(pid){const cents=publicPrices[pid];return Number.isSafeInteger(cents)&&cents>0?new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(cents/100):'Precio por definir';},
   async loadPlanPrices(){const rows=check(await client.from('ent_plans').select('id,price_cents'));for(const p of rows)publicPrices[p.id]=p.price_cents===null?null:Number(p.price_cents);},
   async preview(code){const rows=await rpc('ent_preview_invitation',{p_code:code});if(!rows?.length)throw Error('No encontramos una invitación vigente con ese código. Pedile una nueva a tu profesor.');return rows[0];},
@@ -229,7 +232,7 @@
   },
   async login(data){authBusy=true;try{const result=check(await client.auth.signInWithPassword(credentials(data)));await enter(result.session);}finally{authBusy=false;}},
   async recover(email){check(await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/?recuperar=1'}));},
-  async start(){if(started)return;started=true;try{const {session}=check(await client.auth.getSession());if(recovery)return;if(session)await enter(session);else {checking=false;const hasInvite=new URL(window.location.href).searchParams.has('profesor');const saved=!hasInvite&&window.EntrenarDemoResume?.();if(!saved&&!hasInvite)window.EntrenarAccessNavigation?.restore({screen:'welcome'});}}catch(e){checking=false;accessPanel('No pudimos conectar',friendly(e),'<button class="access-btn" data-cloud="retry">Reintentar</button>');}},
+  async start(){if(started)return;started=true;try{const {session}=check(await client.auth.getSession());if(recovery)return;if(session)await enter(session);else {checking=false;const hasInvite=new URL(window.location.href).searchParams.has('profesor');const saved=!hasInvite&&window.EntrenarDemoResume?.();if(saved)animateOpening();if(!saved&&!hasInvite){if($('#access .access-screen-welcome'))window.dispatchEvent(new CustomEvent('entrenar:access-view'));else window.EntrenarAccessNavigation?.restore({screen:'welcome'});}}}catch(e){checking=false;accessPanel('No pudimos conectar',friendly(e),'<button class="access-btn" data-cloud="retry">Reintentar</button>');}},
   enterDemo(){if(user||live||checking)return false;state=localDemo();upgradeState();return true;},logout
  };
  window.EntrenarCloud=api;
