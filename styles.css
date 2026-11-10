@@ -231,6 +231,22 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 .install-callout .install-status{margin:12px 0 0;font-size:12px}
 .install-callout .install-status:empty{display:none}
 
+/* Short videos open on demand; the routine behind the dialog stays intact. */
+#modal.exercise-video-modal{width:min(540px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 32px);padding:24px;overscroll-behavior:contain}
+.exercise-video-modal .modal-head{align-items:flex-start;gap:12px;margin-bottom:16px}
+.exercise-video-modal .modal-head>div{min-width:0}
+.exercise-video-modal .modal-head h2{overflow-wrap:anywhere}
+.exercise-video-modal .modal-head>button{min-width:44px;min-height:44px;flex-shrink:0}
+.exercise-video-modal .modal-content{min-width:0}
+.exercise-video-stage{background:#10291e;border-radius:14px;overflow:hidden;margin:0 auto;width:min(338px,calc(58dvh * 9 / 16));min-width:200px;max-width:100%;aspect-ratio:9/16}
+.exercise-video-frame{width:100%;height:100%;border:0;display:block}
+.exercise-video-modal .video-help{font-size:12px;color:#718075;line-height:1.6;margin:16px 0 12px}
+.video-modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.video-modal-actions a{color:var(--forest)}
+.video-modal-actions .btn{flex:1;min-width:170px;min-height:44px}
+@media(max-width:700px){#modal.exercise-video-modal{padding:20px;max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}.exercise-video-modal .modal-head h2{font-size:20px}.exercise-video-modal .modal-head p{font-size:12px}}
+@media(max-height:520px){.exercise-video-stage{width:min(100%,480px);min-width:200px;aspect-ratio:16/9}}
+
 .cloud-live .demo-strip {
   display: none;
 }

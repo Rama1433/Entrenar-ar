@@ -1,4 +1,4 @@
-# Entrenar · V1.9.9 · Supabase
+# Entrenar · V1.9.10 · Supabase
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -11,7 +11,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.9.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.10.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -126,3 +126,11 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - Videos comunes, youtu.be, archivos y otras plataformas se rechazan tanto en demo como en cuenta real. La app no transforma enlaces comunes en Shorts.
 - Aplicar Entrenar_05_Solo_Shorts.sql en Supabase antes de publicar. Agrega un CHECK para futuras altas/actualizaciones sin borrar enlaces históricos. Los ejercicios antiguos con enlaces distintos requieren reemplazarlos o quitarlos al editar.
 - Se valida el formato de la dirección, no la existencia, clasificación, contenido ni duración real del video en YouTube. Verificar eso requiere un servicio adicional. No hay carga de archivos ni consumo de Supabase Storage.
+
+## Cambios V1.9.10
+
+- Ver técnica en la rutina y Ver video en Ejercicios abren el reproductor oficial de YouTube en un diálogo adaptable dentro de Entrenar. El video se carga solo al tocar el botón.
+- Cerrar/Volver al ejercicio/Escape destruyen el iframe para detener la reproducción. No se modifica la rutina, sus registros ni el temporizador.
+- Se mantiene a la vista Abrir en YouTube como alternativa para videos restringidos, privados o no disponibles y problemas de conexión. La app no detecta automáticamente restricciones dentro del reproductor de otro dominio.
+- CSP permite únicamente el dominio www.youtube.com para frames y mantiene los demás permisos; el iframe envía la referencia de origen requerida. No se agregan scripts externos ni claves.
+- Sin SQL nuevo; conservar aplicado el SQL 05 de Shorts de la versión anterior. Se sigue almacenando únicamente el enlace.
