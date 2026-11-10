@@ -22,7 +22,7 @@
   const result=[];for(let offset=0;;offset+=500){const rows=check(await client.from(table).select('*').order(order).range(offset,offset+499));result.push(...rows);if(rows.length<500)return result;}
  }
  const dateAR=value=>new Date(value).toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'});
- function friendly(e){const m=e?.message||'';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/ent_get_invitation/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 04 de invitaciones cortas en Supabase.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/ent_exercises_shorts_only/i.test(m))return 'Solo se aceptan enlaces de YouTube Shorts. Revisá el enlace del ejercicio.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
+ function friendly(e){const m=e?.message||'';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/ent_get_invitation/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 04 de invitaciones cortas en Supabase.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/duration_seconds/i.test(m)&&/column|schema cache|PGRST204/i.test(m))return 'Falta aplicar el SQL 06 de duración de entrenamientos en Supabase. Tu avance se conserva.';if(/ent_exercises_shorts_only/i.test(m))return 'Solo se aceptan enlaces de YouTube Shorts. Revisá el enlace del ejercicio.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
  function credentials(data){const email=String(data.get('email')||'').trim(),password=String(data.get('password')||'');if(!email||!password)throw Error('Completá correo y contraseña.');return {email,password};}
  function needRole(expected){if(!live||myRole!==expected)throw Error('Tu cuenta no tiene permiso para esa operación.');}
  function isCoachActive(){return subscription&&['trial','active'].includes(subscription.status)&&subscription.ends_on>=today();}
@@ -43,7 +43,7 @@
   s.exercises=(t.ent_exercises||[]).filter(e=>!e.archived).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes}));
   s.routines=(t.ent_routines||[]).filter(r=>!r.archived).map(r=>({id:r.id,name:r.name,description:r.description,days:r.days,exercises:(t.ent_routine_exercises||[]).filter(e=>e.routine_id===r.id).sort((a,b)=>a.position-b.position).map(e=>({exerciseId:e.exercise_id,sets:e.sets,reps:e.reps,rest:e.rest_seconds}))}));
   s.assignments=(t.ent_assignments||[]).map(a=>({id:a.id,studentId:a.student_id,routineId:a.routine_id,membershipId:a.membership_id}));
-  s.sessions=(t.ent_sessions||[]).map(x=>({id:x.id,studentId:x.student_id,routineId:x.routine_id,routineName:x.routine_name,completedAt:x.completed_at,date:dateAR(x.completed_at),exercises:x.exercise_log,note:x.note})).sort((a,b)=>b.completedAt.localeCompare(a.completedAt));
+  s.sessions=(t.ent_sessions||[]).map(x=>({id:x.id,studentId:x.student_id,routineId:x.routine_id,routineName:x.routine_name,durationSeconds:Number.isInteger(x.duration_seconds)?x.duration_seconds:null,completedAt:x.completed_at,date:dateAR(x.completed_at),exercises:x.exercise_log,note:x.note})).sort((a,b)=>b.completedAt.localeCompare(a.completedAt));
   s.measurements=(t.ent_measurements||[]).map(x=>({id:x.id,studentId:x.student_id,date:x.recorded_on,weight:x.weight_kg===null?null:Number(x.weight_kg),height:x.height_cm===null?null:Number(x.height_cm)}));
   s.notices=(t.ent_student_notices||[]).map(n=>({id:n.id,title:n.title,body:n.body,date:dateAR(n.created_at)})).reverse();
   const recipients=t.ent_announcement_recipients||[];
@@ -95,7 +95,7 @@
  async function enter(session){
   const remembered=window.history.state?.entrenarNavigation?.view;
   const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
-  stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
+  stopTimer();stopWorkoutClock();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
   try{
    const result=await client.auth.getUser();const verified=check(result)?.user;if(!verified||g!==generation)return;
    user=verified;myRole=await rpc('ent_my_role');if(g!==generation)return;
@@ -126,7 +126,7 @@
  async function logout(){
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
   ++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
-  stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
+  stopTimer();stopWorkoutClock();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
   sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
   state=localDemo();upgradeState();role='coach';page='Inicio';detailId=null;studentId=state.students[0]?.id||'';checking=false;
@@ -164,11 +164,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.10 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.11 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.10</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.11</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -221,7 +221,7 @@
   if(a==='confirm-broadcast'){const n=window.pendingBroadcast;if(n?.audience==='students'&&myRole==='coach')run(async()=>{check(await client.from('ent_student_notices').insert({coach_id:user.id,title:n.title,body:n.body}));delete window.pendingBroadcast;},'Aviso publicado para tus alumnos.');return true;}
   if(a==='finish-workout'){
    const r=state.routines.find(r=>r.id===cid),d=r&&ensureDraft(cid),m=currentMember();if(!r||!m||!r.exercises.every((_,i)=>d.done.includes(i)))return true;
-   d.operationId??=id();const payload={id:d.operationId,coach_id:m.coach_id,student_id:user.id,membership_id:m.id,routine_id:r.id,routine_name:r.name,note:d.note,exercise_log:r.exercises.map((x,i)=>({...x,name:getExercise(x.exerciseId)?.name||'Ejercicio',load:d.logs[i]?.load??'',actualReps:d.logs[i]?.actualReps??''}))};
+   d.operationId??=id();d.finishedAt??=new Date().toISOString();save();const payload={duration_seconds:workoutSeconds(d),id:d.operationId,coach_id:m.coach_id,student_id:user.id,membership_id:m.id,routine_id:r.id,routine_name:r.name,note:d.note,exercise_log:r.exercises.map((x,i)=>({...x,name:getExercise(x.exerciseId)?.name||'Ejercicio',load:d.logs[i]?.load??'',actualReps:d.logs[i]?.actualReps??''}))};
    run(async()=>{const result=await client.from('ent_sessions').insert(payload);if(result.error?.code==='23505'){const old=check(await client.from('ent_sessions').select('id').eq('id',payload.id).single());if(!old)throw result.error;}else check(result);delete state.drafts[draftKey(user.id,cid)];save();stopTimer();page='Progreso';detailId=null;},'¡Entrenamiento guardado!');return true;
   }
   return false;
@@ -297,7 +297,7 @@
   if(['admin-payment-form','admin-message-form','broadcast-form'].includes(f.id))return;
   e.preventDefault();e.stopImmediatePropagation();submitLive(f).then(result=>{if(result===null)toast('Esta operación no está disponible para tu cuenta.');}).catch(err=>toast(friendly(err)));
  },true);
- function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
+ function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();stopWorkoutClock();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
  client.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){recovery=true;++generation;setTimeout(showRecovery,0);return;}
   if(event==='SIGNED_OUT'&&user){setTimeout(logout,0);return;}

@@ -247,6 +247,32 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @media(max-width:700px){#modal.exercise-video-modal{padding:20px;max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}.exercise-video-modal .modal-head h2{font-size:20px}.exercise-video-modal .modal-head p{font-size:12px}}
 @media(max-height:520px){.exercise-video-stage{width:min(100%,480px);min-width:200px;aspect-ratio:16/9}}
 
+/* Guided student training: current exercise, rest and elapsed time. */
+.workout-clock{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:17px;padding-top:16px;border-top:1px solid var(--line);font-size:12px}
+.workout-clock>span{display:flex;align-items:center;gap:8px;color:#61745f}.workout-clock svg{width:17px;height:17px}.workout-clock strong{font-size:20px;font-variant-numeric:tabular-nums}
+.workout-time-hint{font-size:10px;color:#788677;margin-top:5px}
+.rest-dock{position:sticky;top:12px;z-index:20;display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:13px;padding:16px;background:#fff;border:1px solid #dce5d4;border-radius:16px;margin:0 0 22px;box-shadow:0 5px 18px #173b2b0b}
+.rest-clock{width:64px;height:64px;position:relative;display:grid;place-items:center;isolation:isolate}
+.rest-clock svg{position:absolute;inset:0;width:100%;height:100%;fill:none;transform:rotate(-90deg)}
+.rest-clock circle{stroke-width:2.4;stroke:#a3ba83}.rest-clock .rest-track{stroke:#e6ecdf}
+#rest-progress{stroke:#799f4c;stroke-dasharray:100;stroke-dashoffset:0;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.rest-clock strong{font-size:15px;font-variant-numeric:tabular-nums}
+.rest-copy{min-width:0}.rest-copy strong{display:block;font-size:14px;line-height:1.4}.rest-copy small{display:block;font-size:11px;line-height:1.5;color:#778479;margin-top:5px}
+.rest-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.rest-controls .btn{min-width:80px}.rest-sound{background:none;color:#5e774d;font-size:11px;min-height:44px;padding:6px;max-width:100px}
+.rest-running{background:#173b2b;border-color:#173b2b;color:#fff}.rest-running .rest-copy small{color:#c6d7bf}.rest-running .rest-sound{color:#d2f580}.rest-running .btn{color:#fff;border-color:#718b66}
+.rest-running .rest-track{stroke:#41623f}.rest-running #rest-progress{stroke:#d2f580}.rest-running .rest-clock:before{content:'';position:absolute;inset:3px;border-radius:50%;z-index:-1;background:#c9ee6e1a;animation:rest-breathe 1.6s ease-in-out infinite;pointer-events:none}
+.rest-finished{background:#edf5df;border-color:#9fbf73}
+.workout-completed{margin:0 0 24px;border:1px solid #dce6d2;border-radius:16px;background:#f1f6e9;overflow:hidden}
+.workout-completed>summary{padding:18px 20px;font-size:14px;font-weight:600;cursor:pointer;min-height:56px;list-style:revert}
+.workout-completed>summary>svg{width:17px;height:17px;vertical-align:middle;margin-right:6px}.workout-completed>summary>span{float:right;border-radius:20px;background:#deebcd;padding:2px 9px;font-size:12px}
+.workout-completed>.workout-exercises{padding:0 15px 15px;margin:0}.workout-pending:empty{display:none}
+.workout-card,.workout-finish{scroll-margin-top:155px}.workout-next{animation:workout-next-in .4s ease-out}
+.workout-duration-summary{padding:24px;background:#173b2b;border-radius:14px;color:#fff;margin:0 0 20px}.workout-duration-summary>span{display:block;font-size:12px;color:#cfdfc6}.workout-duration-summary>strong{display:block;font-size:28px;line-height:1.4;margin:8px 0;font-variant-numeric:tabular-nums}.workout-duration-summary>p{font-size:12px;color:#c5d5bd}
+@keyframes rest-breathe{0%,100%{transform:scale(.88);opacity:.4}50%{transform:scale(1.1);opacity:1}}
+@keyframes workout-next-in{from{opacity:.65;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.rest-dock{gap:10px;padding:13px 12px;top:8px}.rest-copy strong{font-size:12px}.rest-copy small{font-size:10px}.rest-controls{flex-direction:column;gap:0}.rest-controls .btn{padding:9px 10px;font-size:11px}.rest-sound{font-size:10px;max-width:84px}.workout-completed>.workout-exercises{padding:0 12px 12px}.workout-duration-summary>strong{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.rest-running .rest-clock:before,.workout-next{animation:none}#rest-progress{transition:none}}
+
 .cloud-live .demo-strip {
   display: none;
 }
