@@ -1,6 +1,6 @@
-# Entrenar · V1.9.19 · Supabase
+# Entrenar · V1.9.20 · Supabase
 
-**Antes de publicar V1.9.19:** ejecutá `setup/Entrenar_09_Plantillas_Rutinas.sql` en el SQL Editor de Supabase (después de los SQL 07 y 08). Luego subí el contenido actualizado a GitHub. El SQL 09 permite guardar las copias y asignaciones de forma atómica, sin modificar registros existentes al ejecutarse.
+**Antes de publicar V1.9.20:** ejecutá `setup/Entrenar_10_Catalogo_y_Contactos.sql` en el SQL Editor de Supabase, con el SQL 09 ya aplicado. Luego subí el contenido actualizado a GitHub. El SQL 10 habilita el catálogo administrable y unifica los contactos. Conserva los datos existentes.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -13,7 +13,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.19.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.20.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -206,3 +206,21 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - Texto redundante del descanso oculto visualmente; anuncio accesible conservado.
 - Invitación de WhatsApp con puntos de código y enlace UTF-8 normalizado.
 - Ver RUTINAS.md para el alcance y el uso.
+
+
+## Cambios V1.9.20
+
+- Administrador → Catálogo: crear y editar ejercicios y plantillas, con borrador/publicado/archivado. Solo el contenido publicado se ofrece a profesores. Incluye las seis referencias de ejercicios y cuatro plantillas iniciales.
+- Un profesor sigue guardando sus propias copias. Los cambios del catálogo no alteran ejercicios, rutinas, asignaciones ni sesiones existentes. Las copias nuevas conservan el Short y las indicaciones.
+- Para archivar un ejercicio usado por una plantilla publicada, primero retirarlo de esa plantilla o archivarla.
+- Datos de contacto: correo sin espacios y en minúscula; WhatsApp admite formato con espacios, paréntesis y guiones y se guarda con + y código de país. No se adivina el país. Revisar números antiguos que no incluyan código de país.
+- La ficha administrativa refresca datos al abrirse, muestra el número completo y ofrece un enlace a WhatsApp. También se unifican los enlaces de contacto de los perfiles.
+- SQL 10 reejecutable, RLS en las dos nuevas tablas, escritura exclusiva mediante funciones que verifican al administrador. No permite gestionar el catálogo desde demos.
+
+### Habilitar este cambio
+
+1. Con SQL 09 ya aplicado, abrir `setup/Entrenar_10_Catalogo_y_Contactos.sql`, copiar solo el SQL completo y ejecutarlo en Supabase → SQL Editor.
+2. Subir todos los archivos de este ZIP a GitHub, conservando `index.html` en la raíz del proyecto. Vercel desplegará la actualización.
+3. Cerrar y volver a abrir la PWA; verificar V1.9.20. Entrar como administrador → Catálogo. Los próximos contenidos se cargan desde la app sin volver a editar código.
+
+Validado localmente con interfaz y Supabase simulado, PostgreSQL con RLS y vistas PC/móvil. El SQL no se ejecutó en tu Supabase ni se desplegó automáticamente esta versión.

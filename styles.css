@@ -364,6 +364,12 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 
 .editor-order .btn{font-size:16px;color:#586e51}
 @media(max-width:700px){.routine-composition .exercise-editor>.row{flex-wrap:wrap}.routine-composition .exercise-editor>.row>select{flex-basis:100%;width:100%}.routine-composition .editor-order{margin-left:auto}}
+
+.full-contact{display:inline-block;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:break-word}.profile-contacts>*{min-width:0}
+.catalog-install{padding:18px;border:1px solid #d9e1cf;border-radius:14px;background:#eef3e6;margin-bottom:20px;line-height:1.6}
+.catalog-routine-row{border:1px solid #dfe7d5;padding:16px;border-radius:14px;margin:16px 0;background:#f7f9f3}
+.catalog-routine-row label{display:block;font-size:12px;margin-bottom:8px}.catalog-routine-row select,.catalog-routine-row input{width:100%;min-width:0;margin-top:7px}.catalog-routine-row .form-grid{display:grid;grid-template-columns:70px minmax(0,1fr) 90px;gap:12px;margin-top:12px}
+@media(max-width:700px){body[data-role=admin] #mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}body[data-role=admin] #mobile-nav button{min-width:0;padding:10px 1px;font-size:9px}body[data-role=admin] #mobile-nav svg{width:21px;height:21px}.catalog-routine-row{padding:12px}.catalog-routine-row .form-grid{grid-template-columns:55px minmax(0,1fr) 75px;gap:8px}}
 .cloud-live .demo-strip {
   display: none;
 }

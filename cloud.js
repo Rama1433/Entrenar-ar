@@ -22,8 +22,8 @@
   const result=[];for(let offset=0;;offset+=500){const rows=check(await client.from(table).select('*').order(order).range(offset,offset+499));result.push(...rows);if(rows.length<500)return result;}
  }
  const dateAR=value=>new Date(value).toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'});
- function friendly(e){const m=e?.message||'';if(/ent_save_routine_bundle/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 09 de plantillas de rutinas en Supabase. Tus cambios siguen en este formulario.';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/ent_get_invitation/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 04 de invitaciones cortas en Supabase.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/duration_seconds/i.test(m)&&/column|schema cache|PGRST204/i.test(m))return 'Falta aplicar el SQL 06 de duración de entrenamientos en Supabase. Tu avance se conserva.';if(/ent_exercises_shorts_only/i.test(m))return 'Solo se aceptan enlaces de YouTube Shorts. Revisá el enlace del ejercicio.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
- function credentials(data){const email=String(data.get('email')||'').trim(),password=String(data.get('password')||'');if(!email||!password)throw Error('Completá correo y contraseña.');return {email,password};}
+ function friendly(e){const m=e?.message||'';if(/ent_admin_save_catalog|ent_catalog_/i.test(m)&&/PGRST20[25]|schema cache|does not exist/i.test(m))return 'Falta aplicar el SQL 10 de catálogo en Supabase.';if(/ent_save_routine_bundle/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 09 de plantillas de rutinas en Supabase. Tus cambios siguen en este formulario.';if(/email address not authorized|error sending confirmation email/i.test(m))return 'No pudimos enviar el correo de confirmación. Falta revisar la configuración de correos de Entrenar.';if(/invalid login credentials/i.test(m))return 'Revisá el correo y la contraseña.';if(/email not confirmed/i.test(m))return 'Confirmá tu correo antes de ingresar.';if(/already registered|already been registered/i.test(m))return 'Este correo ya tiene una cuenta. Probá iniciar sesión.';if(/rate limit|too many requests|security purposes/i.test(m))return 'Se hicieron varios intentos. Esperá unos minutos y volvé a probar.';if(/failed to fetch|network|timeout/i.test(m))return 'No pudimos conectar. Revisá tu conexión e intentá de nuevo.';if(/ent_get_invitation/i.test(m)&&/PGRST202|function|schema cache/i.test(m))return 'Falta aplicar el SQL 04 de invitaciones cortas en Supabase.';if(/PGRST202|function .*schema cache/i.test(m))return 'Falta aplicar el SQL 03 de conexión en Supabase.';if(/permission denied|row.level security|not authorized/i.test(m))return 'Tu cuenta no tiene permiso para esa operación. Actualizá los datos e intentá de nuevo.';if(/duplicate key/i.test(m))return 'Ese registro ya existe. Actualizá la pantalla para revisarlo.';if(/duration_seconds/i.test(m)&&/column|schema cache|PGRST204/i.test(m))return 'Falta aplicar el SQL 06 de duración de entrenamientos en Supabase. Tu avance se conserva.';if(/ent_exercises_shorts_only/i.test(m))return 'Solo se aceptan enlaces de YouTube Shorts. Revisá el enlace del ejercicio.';if(/check constraint|invalid input|not.null/i.test(m))return 'Revisá los datos del formulario.';if(/password/i.test(m))return 'La contraseña no cumple los requisitos. Usá al menos 10 caracteres.';return m.slice(0,200)||'No pudimos completar la operación. Intentá de nuevo.';}
+ function credentials(data){const email=normalizeEmail(data.get('email')),password=String(data.get('password')||'');if(!email||!password)throw Error('Completá correo y contraseña.');return {email,password};}
  async function saveSexPreference(data){
   const sex=normalizeSex(data.get('sex'));if(sex===normalizeSex(user?.user_metadata?.sex))return;
   const owner=user?.id;const result=check(await client.auth.updateUser({data:{sex}}));
@@ -76,10 +76,13 @@
    if(kind!=='admin')names.push('ent_exercises','ent_routines','ent_routine_exercises','ent_assignments','ent_sessions','ent_student_notices');
    if(kind==='student')names.push('ent_measurements');
    const pairs=await Promise.all(names.map(async n=>[n,await all(n,n==='ent_coaches'?'user_id':n==='ent_subscriptions'?'coach_id':n==='ent_announcement_recipients'?'announcement_id':'id')]));
+   let platform=null;
+   if(kind==='admin'||kind==='coach')try{platform=await Promise.all([all('ent_catalog_exercises'),all('ent_catalog_routines')]);}catch(error){if(!/42P01|PGRST205|schema cache|does not exist/i.test((error.code||'')+' '+error.message))throw error;}
    const t=Object.fromEntries(pairs);t.counts=kind==='admin'?await rpc('ent_admin_coach_counts'):[];
    if(g!==generation||uid!==user?.id||!live)return;
    const next=mapData(t,kind,uid);next.drafts=state.drafts||{};next.readStudentNotices=state.readStudentNotices||{};
-   state=next;memberships=t.ent_memberships;subscription=t.ent_subscriptions.find(s=>s.coach_id===uid)||null;personal=t.ent_profiles.find(p=>p.id===uid)||null;
+   next.catalogReady=platform!==null;next.catalogExercises=(platform?.[0]||[]).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes,primaryMuscles:e.primary_muscles,secondaryMuscles:e.secondary_muscles,status:e.status}));next.catalogRoutines=platform?.[1]||[];
+   state=next;syncPlatformCatalog(platform?next.catalogExercises:null,next.catalogRoutines);memberships=t.ent_memberships;subscription=t.ent_subscriptions.find(s=>s.coach_id===uid)||null;personal=t.ent_profiles.find(p=>p.id===uid)||null;
    // Auth is the source of the current email, including confirmed email changes.
    if(kind==='coach')state.coach.email=user.email||state.coach.email;
    if(kind==='student'){const me=state.students.find(s=>s.id===uid);if(me)me.email=user.email||me.email;studentId=uid;}
@@ -110,7 +113,7 @@
  }
  async function enter(session){
   const remembered=window.history.state?.entrenarNavigation?.view;
-  const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
+  syncPlatformCatalog(null,[]);const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
   try{
    const result=await client.auth.getUser();const verified=check(result)?.user;if(!verified||g!==generation)return;
@@ -141,7 +144,7 @@
  }
  async function logout(){
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
-  ++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
+  syncPlatformCatalog(null,[]);++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
   sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
@@ -180,11 +183,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.19 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.20 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.19</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.20</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -224,6 +227,7 @@
  function adminCommitMessage(n){needRole('admin');return run(()=>rpc('ent_admin_publish',{p_title:n.title,p_body:n.body,p_recipients:n.recipientIds}),'Comunicado publicado para profesores.');}
  function clickLive(b){
   const a=b.dataset.action,aa=b.dataset.adminAction,cid=b.dataset.id;
+  if(aa==='detail'){needRole('admin');page='Profesores';detailId=cid;render();refresh().catch(error=>toast(friendly(error)));return true;}
   if(aa==='new'||a==='new-coach'){toast('El profesor debe crear y confirmar su propia cuenta. Aparecerá en Profesores para que actives su plan.');return true;}
   if(aa==='edit'||a==='edit-coach'){subscriptionForm(state.adminCoaches.find(c=>c.id===cid));return true;}
   if(aa==='toggle'){const c=state.adminCoaches.find(c=>c.id===cid);if(c?.serverStatus==='suspended'){subscriptionForm(c);return true;}openModal('Suspender profesor','Conserva el historial y pausa el acceso a los entrenamientos.',`<p>${esc(c?.name)}</p><div class="form-actions">${btn('Cancelar','close-modal','outline')}<button class="btn primary" data-cloud="suspend" data-id="${esc(cid)}">Confirmar suspensión</button></div>`);return true;}
@@ -244,14 +248,14 @@
  }
  async function submitLive(f){
   const data=new FormData(f),v=n=>String(data.get(n)||'').trim(),fid=f.dataset.id;
-  if(['admin-payment-form','admin-message-form','broadcast-form'].includes(f.id))return false; // These only open a review; confirmation uses the remote operation.
+  if(['admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return false; // These only open a review; confirmation uses the remote operation.
   const known=['admin-price-form','cloud-subscription','cloud-profile','cloud-email','cloud-link','cloud-link-confirm','cloud-member','exercise-form','routine-form','assign-form','measurement-form'];
   if(!known.includes(f.id))return null;
   await run(async()=>{
    if(f.id==='admin-price-form'){needRole('admin');await rpc('ent_admin_set_price',{p_plan:fid,p_price_cents:window.EntrenarAdminPreview.parseAmount(v('amount'),true)});}
    if(f.id==='cloud-subscription'){needRole('admin');await rpc('ent_admin_set_subscription',{p_coach:fid,p_plan:v('plan'),p_status:v('status'),p_ends_on:v('ends_on')||null});}
-   if(f.id==='cloud-profile'){await rpc('ent_update_my_profile',{p_name:v('name'),p_whatsapp:v('whatsapp')});if(myRole==='student')await saveSexPreference(data);}
-   if(f.id==='cloud-email'){if(v('email').toLowerCase()===user.email.toLowerCase())throw Error('Ingresá una dirección nueva.');check(await client.auth.updateUser({email:v('email')},{emailRedirectTo:window.location.origin+'/'}));toast('Revisá tu correo actual y el nuevo para confirmar el cambio.');}
+   if(f.id==='cloud-profile'){await rpc('ent_update_my_profile',{p_name:v('name'),p_whatsapp:normalizeWhatsapp(v('whatsapp'))||v('whatsapp')});if(myRole==='student')await saveSexPreference(data);}
+   if(f.id==='cloud-email'){if(v('email').toLowerCase()===user.email.toLowerCase())throw Error('Ingresá una dirección nueva.');check(await client.auth.updateUser({email:normalizeEmail(v('email'))},{emailRedirectTo:window.location.origin+'/'}));toast('Revisá tu correo actual y el nuevo para confirmar el cambio.');}
    if(f.id==='cloud-member'){needRole('coach');check(await client.from('ent_memberships').update({goal:v('goal'),days:Number(v('days')),notes:v('notes')}).eq('id',fid).eq('coach_id',user.id).select('id').single());}
    if(f.id==='exercise-form'){needRole('coach');const video=youtubeShortUrl(v('video'));exerciseNameAvailable(v('name'),v('group'),fid);const targets=readMuscleFields(data);const x={name:v('name'),muscle_group:v('group'),video_url:video,notes:v('notes'),primary_muscles:targets.primaryMuscles,secondary_muscles:targets.secondaryMuscles};check(await (fid?client.from('ent_exercises').update(x).eq('id',fid).eq('coach_id',user.id):client.from('ent_exercises').insert({...x,coach_id:user.id})).select('id').single());}
    if(f.id==='routine-form'){needRole('coach');const values=readRoutineForm(f);await rpc('ent_save_routine_bundle',{p_id:fid||null,p_operation:f.dataset.operation,p_name:values.name,p_description:values.description,p_days:values.days,p_exercises:routineBundleItems(values.exercises),p_students:values.students});if(fid)for(const k of Object.keys(state.drafts))if(k.endsWith(':'+fid))delete state.drafts[k];routineLibraryTab='mine';}
@@ -263,6 +267,7 @@
   return true;
  }
  const api={
+  saveCatalog(kind,recordId,payload){needRole('admin');return run(()=>rpc(kind==='exercise'?'ent_admin_save_catalog_exercise':'ent_admin_save_catalog_routine',{p_id:recordId,p_payload:payload}));},
   get canRefresh(){return live&&!checking&&!busy&&!refreshTask&&!recovery;},get live(){return live;},get checking(){return checking;},get accountId(){return live?user?.id:null;},get role(){return myRole;},get displayName(){return personal?.full_name||'Administrador';},
   mapData,refresh,friendly,adminCommitPayment,adminCommitMessage,animateOpening,
   planPriceLabel(pid){const cents=publicPrices[pid];return Number.isSafeInteger(cents)&&cents>0?new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(cents/100):'Precio por definir';},
@@ -271,7 +276,7 @@
   setInvite(code){pendingCode=code;},
   async register(data,kind,plan,code){
    const {email,password}=credentials(data);if(password.length<10)throw Error('Usá una contraseña de al menos 10 caracteres.');
-   authBusy=true;try{const result=check(await client.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+'/',data:{full_name:String(data.get('name')||'').trim(),whatsapp:String(data.get('whatsapp')||'').trim(),requested_role:kind,requested_plan:plan,...(kind==='student'?{sex:normalizeSex(data.get('sex'))}:{}),invite_code:kind==='student'?code:undefined}}}));if(result.user?.identities?.length===0)throw Error('Revisá tu correo o ingresá si ya tenés una cuenta.');if(result.session){await rpc('ent_onboard',{p_kind:kind,p_name:String(data.get('name')||'').trim(),p_whatsapp:String(data.get('whatsapp')||'').trim(),p_plan:plan});pendingCode=code||'';await enter(result.session);return true;}return false;}finally{authBusy=false;}
+   authBusy=true;try{const result=check(await client.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+'/',data:{full_name:String(data.get('name')||'').trim(),whatsapp:normalizeWhatsapp(data.get('whatsapp'))||'',requested_role:kind,requested_plan:plan,...(kind==='student'?{sex:normalizeSex(data.get('sex'))}:{}),invite_code:kind==='student'?code:undefined}}}));if(result.user?.identities?.length===0)throw Error('Revisá tu correo o ingresá si ya tenés una cuenta.');if(result.session){await rpc('ent_onboard',{p_kind:kind,p_name:String(data.get('name')||'').trim(),p_whatsapp:normalizeWhatsapp(data.get('whatsapp')),p_plan:plan});pendingCode=code||'';await enter(result.session);return true;}return false;}finally{authBusy=false;}
   },
   async login(data){authBusy=true;try{const result=check(await client.auth.signInWithPassword(credentials(data)));await enter(result.session);}finally{authBusy=false;}},
   async recover(email){check(await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/?recuperar=1'}));},
@@ -303,14 +308,14 @@
  window.addEventListener('submit',e=>{
   const f=e.target;if(f.id==='cloud-onboard'){
    e.preventDefault();e.stopImmediatePropagation();if(busy)return;busy=true;const d=new FormData(f);
-   Promise.resolve().then(()=>{if((registrationRole()||d.get('kind'))==='student')return saveSexPreference(d);}).then(()=>rpc('ent_onboard',{p_kind:registrationRole()||d.get('kind'),p_name:d.get('name'),p_whatsapp:d.get('whatsapp'),p_plan:registrationRole()==='student'?'inicial':d.get('plan')})).then(()=>client.auth.getSession()).then(({data})=>enter(data.session)).catch(err=>{$('#access-error').textContent=friendly(err);}).finally(()=>busy=false);return;
+   Promise.resolve().then(()=>{if((registrationRole()||d.get('kind'))==='student')return saveSexPreference(d);}).then(()=>rpc('ent_onboard',{p_kind:registrationRole()||d.get('kind'),p_name:d.get('name'),p_whatsapp:normalizeWhatsapp(d.get('whatsapp')),p_plan:registrationRole()==='student'?'inicial':d.get('plan')})).then(()=>client.auth.getSession()).then(({data})=>enter(data.session)).catch(err=>{$('#access-error').textContent=friendly(err);}).finally(()=>busy=false);return;
   }
   if(f.id==='cloud-password'){
    e.preventDefault();e.stopImmediatePropagation();const d=new FormData(f),p=String(d.get('password'));if(p.length<10||p!==d.get('repeat')){$('#access-error').textContent='Usá al menos 10 caracteres y repetí la misma contraseña.';return;}if(busy)return;busy=true;
    client.auth.updateUser({password:p}).then(check).then(()=>{recovery=false;return client.auth.getSession();}).then(({data})=>enter(data.session)).catch(err=>{$('#access-error').textContent=friendly(err);}).finally(()=>busy=false);return;
   }
   if(!live)return;
-  if(['admin-payment-form','admin-message-form','broadcast-form'].includes(f.id))return;
+  if(['admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return;
   e.preventDefault();e.stopImmediatePropagation();submitLive(f).then(result=>{if(result===null)toast('Esta operación no está disponible para tu cuenta.');}).catch(err=>toast(friendly(err)));
  },true);
  function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
