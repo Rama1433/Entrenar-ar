@@ -1,4 +1,6 @@
-# Entrenar · V1.9.15 · Supabase
+# Entrenar · V1.9.16 · Supabase
+
+**Antes de publicar V1.9.16:** ejecutá `setup/Entrenar_07_Musculos_Ejercicios.sql` en el SQL Editor de Supabase. Después subí los archivos de la app a GitHub. Este SQL agrega campos opcionales y conserva los datos existentes.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -11,7 +13,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.15.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.16.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -166,3 +168,12 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - Historial de entrenamientos: últimos 5 registros, con Ver más para mostrar otros 5 cada vez.
 - Más recientes primero; contador de registros visibles; aplicado en Progreso, recorrido y ficha del alumno.
 - Se conserva el historial completo y las métricas totales. Sin cambios en Supabase.
+
+## Cambios V1.9.16
+
+- Siluetas propias de frente y espalda con músculos principales y secundarios.
+- Panel junto al Short en PC y debajo en celular, más botón Músculos para ejercicios sin video.
+- Catálogo inicial de seis ejercicios, con referencias en MUSCULOS.md.
+- Selección editable por el profesor en ejercicios nuevos y existentes.
+- SQL 07 incluido en setup/: campos opcionales con validación y permisos existentes.
+- Conserva la campana integrada, los tiempos de rutina y el historial con Ver más.

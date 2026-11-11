@@ -40,7 +40,7 @@
   if(coachId){const p=profiles.get(coachId);s.coach={name:p?.full_name||'Tu profesor',email:p?.email||'',whatsapp:p?.whatsapp||'',plan:sub?.plan_id||'inicial',id:coachId};}
   const counts=new Map((t.counts||[]).map(c=>[c.coach_id,Number(c.active_students)]));
   s.adminCoaches=(t.ent_coaches||[]).map(c=>{const p=profiles.get(c.user_id),sub=t.ent_subscriptions.find(x=>x.coach_id===c.user_id);return {id:c.user_id,name:p?.full_name||'Profesor',email:p?.email||'',whatsapp:p?.whatsapp||'',plan:sub?.plan_id||'inicial',status:sub?.status==='suspended'?'inactive':sub?.status==='pending'?'pending':'active',subscription:sub?.status==='trial'?'trial':'paid',expiresAt:sub?.ends_on||'',serverStatus:sub?.status||'pending',activeStudents:counts.get(c.user_id)??null};});
-  s.exercises=(t.ent_exercises||[]).filter(e=>!e.archived).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes}));
+  s.exercises=(t.ent_exercises||[]).filter(e=>!e.archived).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes,primaryMuscles:e.primary_muscles,secondaryMuscles:e.secondary_muscles}));
   s.routines=(t.ent_routines||[]).filter(r=>!r.archived).map(r=>({id:r.id,name:r.name,description:r.description,days:r.days,exercises:(t.ent_routine_exercises||[]).filter(e=>e.routine_id===r.id).sort((a,b)=>a.position-b.position).map(e=>({exerciseId:e.exercise_id,sets:e.sets,reps:e.reps,rest:e.rest_seconds}))}));
   s.assignments=(t.ent_assignments||[]).map(a=>({id:a.id,studentId:a.student_id,routineId:a.routine_id,membershipId:a.membership_id}));
   s.sessions=(t.ent_sessions||[]).map(x=>({id:x.id,studentId:x.student_id,routineId:x.routine_id,routineName:x.routine_name,durationSeconds:Number.isInteger(x.duration_seconds)?x.duration_seconds:null,completedAt:x.completed_at,date:dateAR(x.completed_at),exercises:x.exercise_log,note:x.note})).sort((a,b)=>b.completedAt.localeCompare(a.completedAt));
@@ -164,11 +164,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.15 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.16 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.15</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.16</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -237,7 +237,7 @@
    if(f.id==='cloud-profile'){await rpc('ent_update_my_profile',{p_name:v('name'),p_whatsapp:v('whatsapp')});}
    if(f.id==='cloud-email'){if(v('email').toLowerCase()===user.email.toLowerCase())throw Error('Ingresá una dirección nueva.');check(await client.auth.updateUser({email:v('email')},{emailRedirectTo:window.location.origin+'/'}));toast('Revisá tu correo actual y el nuevo para confirmar el cambio.');}
    if(f.id==='cloud-member'){needRole('coach');check(await client.from('ent_memberships').update({goal:v('goal'),days:Number(v('days')),notes:v('notes')}).eq('id',fid).eq('coach_id',user.id).select('id').single());}
-   if(f.id==='exercise-form'){needRole('coach');const video=youtubeShortUrl(v('video'));const x={name:v('name'),muscle_group:v('group'),video_url:video,notes:v('notes')};check(await (fid?client.from('ent_exercises').update(x).eq('id',fid).eq('coach_id',user.id):client.from('ent_exercises').insert({...x,coach_id:user.id})).select('id').single());}
+   if(f.id==='exercise-form'){needRole('coach');const video=youtubeShortUrl(v('video'));const targets=readMuscleFields(data);const x={name:v('name'),muscle_group:v('group'),video_url:video,notes:v('notes'),primary_muscles:targets.primaryMuscles,secondary_muscles:targets.secondaryMuscles};check(await (fid?client.from('ent_exercises').update(x).eq('id',fid).eq('coach_id',user.id):client.from('ent_exercises').insert({...x,coach_id:user.id})).select('id').single());}
    if(f.id==='routine-form'){needRole('coach');const xs=[...f.querySelectorAll('.exercise-editor')].map(el=>({exerciseId:el.querySelector('[name=exerciseId]').value,sets:Number(el.querySelector('[name=sets]').value),reps:el.querySelector('[name=reps]').value.trim(),rest:Number(el.querySelector('[name=rest]').value)}));await rpc('ent_save_routine',{p_id:fid||null,p_name:v('name'),p_description:v('description'),p_days:[...new Set(data.getAll('days').map(String))],p_exercises:xs});if(fid)for(const k of Object.keys(state.drafts))if(k.endsWith(':'+fid))delete state.drafts[k];}
    if(f.id==='assign-form'){needRole('coach');const s=state.students.find(x=>x.id===v('studentId')&&x.status==='active');if(!s)throw Error('Elegí un alumno aprobado.');check(await client.from('ent_assignments').insert({coach_id:user.id,membership_id:s.membershipId,student_id:s.id,routine_id:v('routineId')}));}
    if(f.id==='measurement-form'){needRole('student');const m=readMeasurement(data,fid);const x={recorded_on:m.date,weight_kg:m.weight,height_cm:m.height};check(await (fid?client.from('ent_measurements').update(x).eq('id',fid).eq('student_id',user.id):client.from('ent_measurements').insert({...x,student_id:user.id})).select('id').single());}
