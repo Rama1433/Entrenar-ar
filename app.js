@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.9.20';
+const APP_VERSION='1.9.21';
 const icons={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5"/>',dumbbell:'<path d="m6 6 12 12M4 9l5-5M2 7l5-5M15 20l5-5M17 22l5-5M5 10l5-5M14 19l5-5"/>',book:'<path d="M12 5v16M3 3h4a5 5 0 0 1 5 2 5 5 0 0 1 5-2h4v16h-4a5 5 0 0 0-5 2 5 5 0 0 0-5-2H3z"/>',chart:'<path d="M4 3v18h17M8 16v-5M13 16V7M18 16v-9"/>',card:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 10h20M6 15h4"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',activity:'<path d="M2 12h5l3-9 4 18 3-9h5"/>',settings:'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',message:'<path d="M21 11a8 8 0 0 1-8 8H5l-3 3V5a3 3 0 0 1 3-3h8a8 8 0 0 1 8 9zM7 8h9M7 12h6"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',back:'<path d="M19 12H5m5-5-5 5 5 5"/>'};
 const icon=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.activity}</svg>`;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -73,11 +73,22 @@ function daysSelector(values){
  const extras=days.filter(d=>!trainingDays.includes(d));
  return `<div class="field"><label id="days-label">Días de entrenamiento</label><details class="days-picker"><summary aria-labelledby="days-label days-summary"><span id="days-summary">${days.length?days.map(d=>esc(d.slice(0,3))).join(' · '):'Seleccioná los días'}</span><span aria-hidden="true">⌄</span></summary><div class="days-options">${[...trainingDays,...extras].map(d=>`<label class="day-option"><input type="checkbox" name="days" value="${esc(d)}" ${days.includes(d)?'checked':''}><span>${esc(d)}</span></label>`).join('')}</div></details><p class="note-text days-hint">Podés seleccionar más de un día.</p></div>`;
 }
-function normalizeWhatsapp(value){
+function argentinaPhoneDigits(value){
  let raw=String(value||'').normalize('NFKC').trim();if(!/^\+?[\d\s().-]+$/.test(raw))return null;
- let digits=raw.replace(/\D/g,'');if(raw.startsWith('00'))digits=digits.slice(2);
- return /^[1-9]\d{7,14}$/.test(digits)?'+'+digits:null;
+ let digits=raw.replace(/\D/g,'');if(raw.startsWith('00')){raw='+'+digits.slice(2);digits=digits.slice(2);}
+ if(digits.length===13&&digits.startsWith('549'))digits=digits.slice(3);
+ else if(digits.length===12&&digits.startsWith('54'))digits=digits.slice(2);
+ else if(raw.startsWith('+'))return null;
+ return /^[123]\d{9}$/.test(digits)?digits:null;
 }
+function normalizeWhatsapp(value){
+ const national=argentinaPhoneDigits(value);if(national)return '+549'+national;
+ let raw=String(value||'').normalize('NFKC').trim();if(!/^\+?[\d\s().-]+$/.test(raw))return null;
+ if(raw.startsWith('00'))raw='+'+raw.replace(/\D/g,'').slice(2);
+ const digits=raw.replace(/\D/g,'');
+ return raw.startsWith('+')&&!digits.startsWith('54')&&/^[1-9]\d{7,14}$/.test(digits)?'+'+digits:null;
+}
+
 
 function roleOptions(current){return `<option value="coach" ${current==='coach'?'selected':''}>Profesor</option><option value="student" ${current==='student'?'selected':''}>Alumno</option>`;}
 const embeddedBrandLogo="<svg class=\"brand-logo\" width=\"164\" height=\"36\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 200 44\" role=\"img\" aria-label=\"entrenar\"><g fill=\"none\" stroke=\"#173b2b\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 24h8l5-15 7 28 6-18h9\"/></g><text x=\"47\" y=\"32\" font-family=\"Inter,Arial,Helvetica,sans-serif\" font-size=\"31\" textLength=\"128\" lengthAdjust=\"spacingAndGlyphs\" font-weight=\"700\" letter-spacing=\"-1.6\" fill=\"#21372c\">entrenar</text><circle cx=\"186\" cy=\"30\" r=\"2.3\" fill=\"#87ab57\"/></svg>";
@@ -479,14 +490,26 @@ function normalizeEmail(value){return String(value||'').trim().toLowerCase();}
 function emailContactMarkup(value){const email=normalizeEmail(value);return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?`<a class="contact-link full-contact" href="mailto:${esc(email)}">${esc(email)}</a>`:esc(value||'Sin completar');}
 function phoneContactMarkup(value){const phone=normalizeWhatsapp(value);return phone?`<a class="contact-link full-contact" href="https://wa.me/${phone.replace(/\D/g,'')}" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp de ${esc(phone)}">${esc(phone)} ↗</a>`:esc(value||'Sin completar');}
 function prepareContactInputs(root){
- if(!root?.querySelectorAll)return;for(const input of [...(root.matches?.('input[type=email],input[type=tel],input[name=whatsapp]')?[root]:[]),...root.querySelectorAll('input[type=email],input[type=tel],input[name=whatsapp]')]){
-  if(input.type==='email'){input.setAttribute('autocapitalize','none');input.setAttribute('spellcheck','false');input.setAttribute('inputmode','email');input.maxLength=254;}
-  else{input.type='tel';input.setAttribute('inputmode','tel');input.maxLength=64;if(!input.placeholder)input.placeholder='+54 9 11 1234 5678';}
+ if(typeof document==='undefined'||!document?.createElement||!root?.querySelectorAll||!root.isConnected)return;
+ const nodes=[...(root.matches?.('input[type=email],input[type=tel],input[name=whatsapp]')?[root]:[]),...root.querySelectorAll('input[type=email],input[type=tel],input[name=whatsapp]')];
+ for(const input of nodes){
+  if(input.type==='email'){input.setAttribute('autocapitalize','none');input.setAttribute('spellcheck','false');input.setAttribute('inputmode','email');input.maxLength=254;continue;}
+  if(input.dataset.phonePrepared)continue;input.dataset.phonePrepared='true';input.type='tel';
+  const current=normalizeWhatsapp(input.value),national=argentinaPhoneDigits(input.value);
+  // Preserve existing foreign contacts; their international prefix remains editable.
+  if(current&&!current.startsWith('+54')){input.value=current;input.maxLength=16;input.inputMode='tel';continue;}
+  input.dataset.phoneCountry='AR';input.inputMode='numeric';input.autocomplete='tel-national';input.maxLength=10;input.pattern='[1-3][0-9]{9}';input.placeholder='1112345678';input.title='10 dígitos con código de área, sin el 0 ni el 15.';
+  if(national){input.value=national;input.defaultValue=national;}
+  const group=document.createElement('span');group.className='phone-input-group';const prefix=document.createElement('span');prefix.className='phone-country-prefix';prefix.textContent='+54';prefix.setAttribute('aria-hidden','true');input.before(group);group.append(prefix,input);
+  const hint=document.createElement('span');hint.className='phone-input-hint';hint.id='phone-hint-'+id();hint.textContent='Argentina · 10 dígitos con código de área, sin 0 ni 15.';group.after(hint);input.setAttribute('aria-describedby',[input.getAttribute('aria-describedby'),hint.id].filter(Boolean).join(' '));
+  const label=input.closest('label')||[...document.querySelectorAll('label[for]')].find(label=>input.id&&label.htmlFor===input.id);if(label)for(const node of label.childNodes)if(node.nodeType===3&&/WhatsApp/i.test(node.textContent))node.textContent='WhatsApp ';
  }
 }
 const contactInputObserver=new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes)if(node.nodeType===1)prepareContactInputs(node);});contactInputObserver.observe(document.body,{childList:true,subtree:true});prepareContactInputs(document);
-document.addEventListener('input',event=>{if(event.target.matches('input[type=email],input[type=tel]'))event.target.setCustomValidity('');});
-document.addEventListener('blur',event=>{const input=event.target;if(input.type==='email')input.value=normalizeEmail(input.value);if(input.matches('input[type=tel],input[name=whatsapp]')&&input.value.trim()){const phone=normalizeWhatsapp(input.value);if(phone)input.value=phone;else input.setCustomValidity('Ingresá el número completo con código de país. Ejemplo: +54 9 11 1234 5678.');}},true);
+document.addEventListener('input',event=>{const input=event.target;if(input.matches('input[type=email],input[type=tel]'))input.setCustomValidity('');if(input.dataset.phoneCountry==='AR')input.value=input.value.replace(/\D/g,'');});
+document.addEventListener('paste',event=>{const input=event.target;if(input.dataset.phoneCountry!=='AR')return;const text=event.clipboardData?.getData('text');if(!text)return;event.preventDefault();const national=argentinaPhoneDigits(text);if(national){input.value=national;input.setCustomValidity('');input.dispatchEvent(new Event('input',{bubbles:true}));}else{input.setCustomValidity('Ingresá 10 dígitos con código de área, sin el 0 ni el 15.');input.reportValidity();}});
+document.addEventListener('blur',event=>{const input=event.target;if(input.type==='email')input.value=normalizeEmail(input.value);if(input.matches('input[type=tel],input[name=whatsapp]')&&input.value.trim()){const national=argentinaPhoneDigits(input.value),phone=normalizeWhatsapp(input.value);if(input.dataset.phoneCountry==='AR'){if(national){input.value=national;input.setCustomValidity('');}else input.setCustomValidity('Ingresá 10 dígitos con código de área, sin el 0 ni el 15.');}else if(phone)input.value=phone;else input.setCustomValidity('Revisá el número de WhatsApp y su código de país.');}},true);
+
 
 function exerciseNameAvailable(name,group,except=''){const current=except&&getExercise(except);if(current&&muscleNameKey(current.name)===muscleNameKey(name)&&current.group===group)return;if(state.exercises.some(e=>e.id!==except&&muscleNameKey(e.name)===muscleNameKey(name)&&e.group===group))throw Error('Ya tenés este ejercicio en tu biblioteca. Podés editarlo o usar otro nombre para una variante.');}
 function compactExerciseLibrary(){
@@ -643,7 +666,7 @@ else if(f.id==='student-profile-form'){
 else if(f.id==='measurement-form'){
  try{const data=readMeasurement(form,itemId);if(itemId){const m=state.measurements.find(x=>x.id===itemId&&x.studentId===studentId);if(!m)return err('No se encontró el registro.');Object.assign(m,data);}else state.measurements.push({id:id(),studentId,...data});}catch(error){return err(error.message);}
 }
-else if(f.id==='student-form'){if(!v('name')||!v('goal'))return err('Completá el nombre y el objetivo.');if(!itemId&&plan().limit&&activeStudents().length>=plan().limit)return err('Llegaste al límite de tu plan. Cambiá de plan o pasá un alumno a inactivo.');const whatsapp=normalizeWhatsapp(v('whatsapp'));if(!whatsapp)return err('Ingresá un WhatsApp válido, con código de país y entre 8 y 15 dígitos.');const data={name:v('name'),email:v('email'),whatsapp,goal:v('goal'),days:Number(v('days')),notes:v('notes')};if(!Number.isInteger(data.days)||data.days<1||data.days>7)return err('Elegí entre 1 y 7 días.');if(itemId)Object.assign(state.students.find(s=>s.id===itemId),data);else state.students.push({id:id(),...data,status:'active'});if(!studentId)studentId=state.students[0].id;}
+else if(f.id==='student-form'){if(!v('name')||!v('goal'))return err('Completá el nombre y el objetivo.');if(!itemId&&plan().limit&&activeStudents().length>=plan().limit)return err('Llegaste al límite de tu plan. Cambiá de plan o pasá un alumno a inactivo.');const whatsapp=normalizeWhatsapp(v('whatsapp'));if(!whatsapp)return err('Ingresá 10 dígitos con código de área, sin el 0 ni el 15.');const data={name:v('name'),email:v('email'),whatsapp,goal:v('goal'),days:Number(v('days')),notes:v('notes')};if(!Number.isInteger(data.days)||data.days<1||data.days>7)return err('Elegí entre 1 y 7 días.');if(itemId)Object.assign(state.students.find(s=>s.id===itemId),data);else state.students.push({id:id(),...data,status:'active'});if(!studentId)studentId=state.students[0].id;}
 else if(f.id==='exercise-form'){if(!v('name'))return err('Escribí el nombre del ejercicio.');let video;try{video=youtubeShortUrl(v('video'));}catch(e){return err(e.message);}let targets;try{targets=readMuscleFields(form);}catch(error){return err(error.message);}try{exerciseNameAvailable(v('name'),v('group'),itemId);}catch(error){return err(error.message);}const data={name:v('name'),group:v('group'),video,notes:v('notes'),...targets};if(itemId)Object.assign(getExercise(itemId),data);else state.exercises.push({id:id(),...data});}
 else if(f.id==='routine-form'){let values;try{values=readRoutineForm(f);}catch(error){return err(error.message);}const exercises=materializeDemoRoutine(values.exercises);const data={name:values.name,description:values.description,days:values.days,exercises};const rid=itemId||f.dataset.operation||id();if(itemId){Object.assign(state.routines.find(r=>r.id===itemId),data);for(const k of Object.keys(state.drafts))if(k.endsWith(':'+itemId))delete state.drafts[k];}else state.routines.push({id:rid,...data});for(const sid of values.students)if(!state.assignments.some(a=>a.studentId===sid&&a.routineId===rid))state.assignments.push({id:id(),studentId:sid,routineId:rid});routineLibraryTab='mine';}
 else if(f.id==='assign-form'){if(state.assignments.some(a=>a.studentId===v('studentId')&&a.routineId===v('routineId')))return err('Este alumno ya tiene asignada esa rutina.');state.assignments.push({id:id(),studentId:v('studentId'),routineId:v('routineId')});}

@@ -79,7 +79,7 @@
       if (form.id === 'access-register') {
         const name = String(data.get('name') || '').trim(), phone = String(data.get('whatsapp') || '').trim();
         if (name.length < 2) throw Error('Completá tu nombre y apellido.');
-        if (!normalizeWhatsapp(phone)) throw Error('Revisá el WhatsApp: ingresá entre 8 y 15 dígitos con código de país.');
+        if (!normalizeWhatsapp(phone)) throw Error('Revisá el WhatsApp: ingresá 10 dígitos con código de área, sin el 0 ni el 15.');
         if (accountRole === 'student' && !invitationConfirmed) throw Error('Revisá primero la invitación de tu profesor.');
         const entered = await window.EntrenarCloud.register(data, accountRole, chosenPlan, inviteCode);
         form.reset(); if (!entered) display('pending');

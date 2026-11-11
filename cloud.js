@@ -9,6 +9,37 @@
  let myRole=null,subscription=null,memberships=[],pendingCode='',invitation=null;
  const publicPrices={};
  let personal=null,refreshTask=null,refreshAgain=false,lastRefresh=0,openingPlayed=false;
+ // Automatic synchronization: private invalidations, coalesced reads, no page reload.
+ let syncChannel=null,syncTimer=null,syncPending=false,syncConnected=false,syncRevision=null,syncRetryAt=0;
+ function automaticBlocked(){const active=document.activeElement,dialog=active?.closest('dialog');const editing=active?.matches('input,textarea,select,[contenteditable=true]')&&(!dialog||dialog.open);return checking||busy||document.hidden||modal.open||editing||(role==='student'&&page==='Mi rutina'&&!!detailId);}
+ function stopSync(){const previous=syncChannel;syncChannel=null;syncConnected=false;clearTimeout(syncTimer);syncTimer=null;if(previous&&typeof client.removeChannel==='function')Promise.resolve(client.removeChannel(previous)).catch(()=>{});}
+ function scheduleSync(delay=700){
+  if(!live||!user||!syncPending||syncTimer||automaticBlocked())return;
+  const g=generation;
+  syncTimer=setTimeout(async()=>{syncTimer=null;if(g!==generation||!live||automaticBlocked())return;if(refreshTask){scheduleSync(1000);return;}
+   syncPending=false;try{await refresh({automatic:true});syncRetryAt=0;}catch{syncPending=true;syncRetryAt=Date.now()+30000;}
+  },Math.max(delay,2000-(Date.now()-lastRefresh),syncRetryAt-Date.now()));
+ }
+ function requestSync(){if(!live)return;syncPending=true;scheduleSync();}
+ function startSync(){
+  if(syncChannel||!live||checking||document.hidden||!user||typeof client.channel!=='function')return;
+  const g=generation,uid=user.id;
+  try{
+   const channel=client.channel('entrenar-account-'+uid+'-'+g);syncChannel=channel;
+   const changed=payload=>{if(g!==generation||!live||user?.id!==uid||syncChannel!==channel||(payload.new?.id&&payload.new.id!==uid))return;const revision=payload.new?.revision;if(revision!==undefined){if(String(revision)===syncRevision)return;syncRevision=String(revision);}requestSync();};
+   for(const event of ['INSERT','UPDATE'])channel.on('postgres_changes',{event,schema:'public',table:'ent_sync_signals',filter:'id=eq.'+uid},changed);
+   channel.subscribe(status=>{if(g!==generation||syncChannel!==channel)return;syncConnected=status==='SUBSCRIBED';if(syncConnected)requestSync();});
+  }catch{stopSync();}
+ }
+ async function checkSync(){
+  if(!live||automaticBlocked()||refreshTask)return;
+  const g=generation,uid=user?.id;
+  try{const rows=check(await client.from('ent_sync_signals').select('revision').eq('id',uid));if(g!==generation||!live||user?.id!==uid)return;
+   const revision=rows?.[0]?.revision;if(revision===undefined){if(Date.now()-lastRefresh>=120000)requestSync();return;}
+   if(String(revision)!==syncRevision){syncRevision=String(revision);requestSync();}
+  }catch{if(g===generation&&live&&Date.now()-lastRefresh>=120000)requestSync();}
+  if(syncPending)scheduleSync();
+ }
  function animateOpening(){if(openingPlayed)return;openingPlayed=true;document.body.classList.add('app-opening');setTimeout(()=>document.body.classList.remove('app-opening'),1100);}
  const demoSave=save,baseRender=render,baseInbox=coachInboxNotices;
  const demoStrip=$('.demo-strip').innerHTML,demoFooter=$('.page-footer').innerHTML;
@@ -68,7 +99,8 @@
   s.adminPayments=(t.ent_payments||[]).map(p=>({id:p.id,coachId:p.coach_id,coachName:p.coach_name,planId:p.plan_id,planName:p.plan_name,amountCents:Number(p.amount_cents),paidAt:p.paid_on,start:p.period_start,end:p.period_end,method:p.method,reference:p.reference,note:p.note,recordedAt:p.recorded_at}));
   return s;
  }
- async function refresh(){
+ async function refresh({automatic=false}={}){
+  if(automatic&&automaticBlocked()){syncPending=true;return;}
   if(refreshTask){refreshAgain=true;return refreshTask;}
   const g=generation,uid=user?.id,kind=myRole;
   refreshTask=(async()=>{
@@ -80,6 +112,7 @@
    if(kind==='admin'||kind==='coach')try{platform=await Promise.all([all('ent_catalog_exercises'),all('ent_catalog_routines')]);}catch(error){if(!/42P01|PGRST205|schema cache|does not exist/i.test((error.code||'')+' '+error.message))throw error;}
    const t=Object.fromEntries(pairs);t.counts=kind==='admin'?await rpc('ent_admin_coach_counts'):[];
    if(g!==generation||uid!==user?.id||!live)return;
+   if(automatic&&automaticBlocked()){syncPending=true;return;}
    const next=mapData(t,kind,uid);next.drafts=state.drafts||{};next.readStudentNotices=state.readStudentNotices||{};
    next.catalogReady=platform!==null;next.catalogExercises=(platform?.[0]||[]).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes,primaryMuscles:e.primary_muscles,secondaryMuscles:e.secondary_muscles,status:e.status}));next.catalogRoutines=platform?.[1]||[];
    state=next;syncPlatformCatalog(platform?next.catalogExercises:null,next.catalogRoutines);memberships=t.ent_memberships;subscription=t.ent_subscriptions.find(s=>s.coach_id===uid)||null;personal=t.ent_profiles.find(p=>p.id===uid)||null;
@@ -113,7 +146,7 @@
  }
  async function enter(session){
   const remembered=window.history.state?.entrenarNavigation?.view;
-  syncPlatformCatalog(null,[]);const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
+  stopSync();syncPending=false;syncRevision=null;syncRetryAt=0;syncPlatformCatalog(null,[]);const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
   try{
    const result=await client.auth.getUser();const verified=check(result)?.user;if(!verified||g!==generation)return;
@@ -131,7 +164,7 @@
    }
    checking=false;window.EntrenarAccessNavigation?.hide();sessionStorage.removeItem('entrenar-demo-navigation');
    window.dispatchEvent(new CustomEvent('entrenar:account-changed'));
-   render();window.EntrenarAccountResume?.(remembered);animateOpening();window.scrollTo(0,0);
+   render();window.EntrenarAccountResume?.(remembered);animateOpening();window.scrollTo(0,0);startSync();
   }catch(e){if(g===generation)accessPanel('No pudimos cargar tu cuenta',friendly(e),'<button class="access-btn" data-cloud="retry">Reintentar</button><button class="access-text" data-cloud="logout">Salir</button>');}
   finally{if(g===generation)checking=false;}
  }
@@ -140,11 +173,11 @@
   document.body.classList.add('cloud-busy');
   try{await task();if(g!==generation)return false;await refresh();if(g!==generation)return false;if(modal.open)modal.close();if(message)toast(message);return true;}
   catch(e){if(g===generation){const err=$('#form-error');if(err)err.textContent=friendly(e);else toast(friendly(e));}return false;}
-  finally{busy=false;document.body.classList.remove('cloud-busy');}
+  finally{busy=false;document.body.classList.remove('cloud-busy');if(syncPending)scheduleSync();}
  }
  async function logout(){
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
-  syncPlatformCatalog(null,[]);++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
+  stopSync();syncPending=false;syncRevision=null;syncPlatformCatalog(null,[]);++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
   stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
   sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
@@ -183,11 +216,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.20 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.21 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.20</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.21</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -220,7 +253,7 @@
   const accountCard=role==='admin'&&page==='Ajustes'?main.querySelector('.panel-content'):page==='Perfil'?main.querySelector('.profile-card'):null;
   if(accountCard)accountCard.insertAdjacentHTML('beforeend','<div class="profile-session-actions"><p class="note-text">Tu sesión en Entrenar</p><button type="button" class="btn outline profile-exit" data-cloud="ask-logout">Salir</button></div>');
  }
- render=function(...args){if(live)role=myRole;else if(!['coach','student'].includes(role)){role='coach';page='Inicio';detailId=null;search='';filter='all';}const result=baseRender(...args);postRender();return result;};
+ render=function(...args){if(live)role=myRole;else if(!['coach','student'].includes(role)){role='coach';page='Inicio';detailId=null;search='';filter='all';}const result=baseRender(...args);postRender();if(syncPending)scheduleSync();return result;};
  coachInboxNotices=function(){return live?state.coachNotices.filter(n=>n.recipientIds.includes(user.id)):baseInbox();};
  save=function(){if(!live)return demoSave();try{sessionStorage.setItem(draftStorageKey(user.id),JSON.stringify({drafts:state.drafts,readStudentNotices:state.readStudentNotices}));return true;}catch{toast('Tu avance queda en esta pestaña. Guardá el entrenamiento antes de cerrarla.');return false;}}; // Remote records never enter the demo's localStorage.
  function adminCommitPayment(p){needRole('admin');return run(()=>rpc('ent_admin_record_payment',{p_operation:p.id,p_coach:p.coachId,p_amount_cents:p.amountCents,p_paid_on:p.paidAt,p_start:p.start,p_end:p.end,p_method:p.method,p_reference:p.reference,p_note:p.note}),'Pago registrado y período renovado.');}
@@ -318,14 +351,20 @@
   if(['admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return;
   e.preventDefault();e.stopImmediatePropagation();submitLive(f).then(result=>{if(result===null)toast('Esta operación no está disponible para tu cuenta.');}).catch(err=>toast(friendly(err)));
  },true);
- function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
+ function showRecovery(){stopSync();syncPending=false;recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
  client.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){recovery=true;++generation;setTimeout(showRecovery,0);return;}
   if(event==='SIGNED_OUT'&&user){setTimeout(logout,0);return;}
   if(!started||authBusy||recovery)return;
   if(session&&(event==='SIGNED_IN'||event==='USER_UPDATED')&&session.user.id!==user?.id)setTimeout(()=>enter(session),0);
-  if(event==='USER_UPDATED'&&session?.user.id===user?.id){user=session.user;setTimeout(()=>{if(live)refresh().catch(e=>toast(friendly(e)));},0);}
+  if(event==='USER_UPDATED'&&session?.user.id===user?.id){user=session.user;setTimeout(requestSync,0);}
  });
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&live&&!busy&&Date.now()-lastRefresh>30000)refresh().catch(e=>toast(friendly(e)));});
- setInterval(()=>{if(live&&!busy&&!document.hidden&&!modal.open&&!document.activeElement?.matches('input,textarea,select'))refresh().catch(()=>{});},60000);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopSync();return;}if(live){startSync();if(Date.now()-lastRefresh>15000)requestSync();else if(syncPending)scheduleSync();}});
+ window.addEventListener('focus',()=>{if(live&&!document.hidden){startSync();if(Date.now()-lastRefresh>15000)requestSync();else if(syncPending)scheduleSync();}});
+ window.addEventListener('online',()=>{if(live&&!document.hidden){startSync();requestSync();}});
+ document.addEventListener('focusout',()=>{if(syncPending)setTimeout(()=>scheduleSync(),0);});
+ modal.addEventListener('close',()=>{if(syncPending)scheduleSync();});
+ window.addEventListener('pagehide',stopSync);
+ window.addEventListener('pageshow',()=>{if(live){startSync();requestSync();}});
+ setInterval(()=>{if(live&&!document.hidden){startSync();checkSync();}},120000);
 })();

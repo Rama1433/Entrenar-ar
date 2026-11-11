@@ -1,6 +1,6 @@
-# Entrenar · V1.9.20 · Supabase
+# Entrenar · V1.9.21 · Supabase
 
-**Antes de publicar V1.9.20:** ejecutá `setup/Entrenar_10_Catalogo_y_Contactos.sql` en el SQL Editor de Supabase, con el SQL 09 ya aplicado. Luego subí el contenido actualizado a GitHub. El SQL 10 habilita el catálogo administrable y unifica los contactos. Conserva los datos existentes.
+**Antes de publicar V1.9.21:** ejecutá `setup/Entrenar_11_Telefonos_y_Actualizacion.sql` en Supabase → SQL Editor, con el SQL 10 ya aplicado. Luego subí todos los archivos actualizados a GitHub. No se reescriben contactos ni datos históricos.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -13,7 +13,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.20.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.21.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -224,3 +224,22 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 3. Cerrar y volver a abrir la PWA; verificar V1.9.20. Entrar como administrador → Catálogo. Los próximos contenidos se cargan desde la app sin volver a editar código.
 
 Validado localmente con interfaz y Supabase simulado, PostgreSQL con RLS y vistas PC/móvil. El SQL no se ejecutó en tu Supabase ni se desplegó automáticamente esta versión.
+
+
+## Cambios V1.9.21
+
+- WhatsApp argentino: prefijo +54 fijo y 10 dígitos nacionales (código de área más número, sin 0 ni 15). Se guarda como +549 más esos 10 dígitos. Admite pegar un número completo con +54/+549/0054 y separadores válidos. Los números inválidos se rechazan; no se recortan silenciosamente. Los contactos internacionales explícitos ya existentes se conservan.
+- La validación también se aplica a completar cuenta y editar perfil en las funciones de Supabase. El SQL no cambia teléfonos antiguos: al editar se revisa el formato.
+- Actualización automática para administrador, profesor y alumno. Una señal privada por cuenta avisa de cambios relevantes (vinculaciones, asignaciones, rutinas, mensajes, suscripción, contactos, etc.). El cliente agrupa avisos cercanos, consulta con los permisos de su cuenta y actualiza datos sin recargar la página.
+- Si hay un modal, un campo enfocado o una rutina del alumno abierta, la actualización automática se posterga hasta liberar la pantalla. Las respuestas que llegan mientras empezás a editar también se postergan. No pierde notas, avance ni temporizador.
+- Se desconecta el canal al ocultar/cerrar la app o salir de la cuenta y se reconecta al volver. Al recuperar conexión o regresar a la app se comprueban cambios. Mientras la app está visible, una comprobación de respaldo cada dos minutos consulta solo una fila de revisión; descarga el resto si cambió. Sin SQL 11 se conserva un respaldo periódico, pero para tiempo real es necesario aplicarlo.
+- Solo `ent_sync_signals` se agrega a la publicación `supabase_realtime`. Tiene RLS por cuenta, lectura propia y ninguna escritura directa para usuarios. No envía nombres, teléfonos, alumnos, rutinas ni mensajes por el canal. Las señales se deduplican por cuenta y transacción. Las demos siguen aisladas.
+- Consumo: utiliza una conexión por sesión visible y mensajes según los cambios; no es consumo cero. No requiere contratar un proveedor adicional. Consultar el uso real de Realtime en Supabase al crecer. No consulta todas las tablas cada minuto como antes.
+
+### Activar V1.9.21
+
+1. Con SQL 10 ya aplicado, ejecutar el SQL completo de `setup/Entrenar_11_Telefonos_y_Actualizacion.sql` en Supabase → SQL Editor.
+2. Subir todos los archivos del ZIP a GitHub (index.html en la raíz). Esperar el despliegue de Vercel y reabrir la PWA.
+3. Verificar V1.9.21. Probar con dos sesiones diferentes: modificar el teléfono del profesor y comprobar su ficha en administrador; aprobar una vinculación y comprobar la vista del alumno, sin recargar.
+
+Validación local: PostgreSQL con RLS y triggers, cliente Supabase simulado y revisión visual PC/móvil. Los avisos WebSocket reales entre dispositivos deben comprobarse luego de ejecutar el SQL y desplegar; no se aplicó esta migración ni se publicó automáticamente la versión.
