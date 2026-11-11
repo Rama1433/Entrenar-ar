@@ -32,15 +32,25 @@
  }
  function needRole(expected){if(!live||myRole!==expected)throw Error('Tu cuenta no tiene permiso para esa operación.');}
  function isCoachActive(){return subscription&&['trial','active'].includes(subscription.status)&&subscription.ends_on>=today();}
- function currentMember(){return memberships.find(m=>m.student_id===user?.id&&['pending','approved'].includes(m.status))||memberships.filter(m=>m.student_id===user?.id).sort((a,b)=>b.created_at.localeCompare(a.created_at))[0];}
+ function preferredMembership(rows){
+  const rank={approved:0,pending:1,inactive:2,rejected:3};
+  return [...rows].sort((a,b)=>(rank[a.status]??4)-(rank[b.status]??4)||String(b.reviewed_at||b.created_at||'').localeCompare(String(a.reviewed_at||a.created_at||''))||String(a.id).localeCompare(String(b.id)))[0];
+ }
+ function currentMember(){return preferredMembership(memberships.filter(m=>m.student_id===user?.id));}
+
  function mapData(t,kind,uid){
   const s=blank(),profiles=new Map(t.ent_profiles.map(p=>[p.id,p]));
   const contact=pid=>{const p=profiles.get(pid);return {name:p?.full_name||'Alumno',email:p?.email||'',whatsapp:p?.whatsapp||'',...(kind==='student'&&pid===uid?{sex:normalizeSex(user?.user_metadata?.sex)}:{})};};
   for(const p of t.ent_plans){s.adminPrices[p.id]=p.price_cents===null?null:Number(p.price_cents);}
   const ms=t.ent_memberships||[];
-  s.students=ms.filter(m=>m.status!=='rejected').map(m=>({id:m.student_id,membershipId:m.id,...contact(m.student_id),goal:m.goal,days:m.days,notes:m.notes,status:m.status==='approved'?'active':m.status==='pending'?'pending':'inactive'}));
+  // Historical memberships remain on the server; each student has one visible file.
+  const studentIds=[...new Set(ms.filter(m=>m.status!=='rejected').map(m=>m.student_id))];
+  s.students=studentIds.map(sid=>{
+   const m=preferredMembership(ms.filter(x=>x.student_id===sid&&x.status!=='rejected'));
+   return {id:sid,membershipId:m.id,...contact(sid),goal:m.goal||'',days:m.days,notes:m.notes||'',status:m.status==='approved'?'active':m.status==='pending'?'pending':'inactive'};
+  });
   if(kind==='student'&&!s.students.some(x=>x.id===uid))s.students.push({id:uid,...contact(uid),goal:'Tu recorrido personal',days:3,notes:'',status:'pending'});
-  const member=ms.find(m=>m.student_id===uid&&['pending','approved'].includes(m.status))||ms.filter(m=>m.student_id===uid).sort((a,b)=>b.created_at.localeCompare(a.created_at))[0];
+  const member=preferredMembership(ms.filter(m=>m.student_id===uid));
   const coachId=kind==='coach'?uid:member?.coach_id;
   const sub=(t.ent_subscriptions||[]).find(x=>x.coach_id===coachId);
   if(coachId){const p=profiles.get(coachId);s.coach={name:p?.full_name||'Tu profesor',email:p?.email||'',whatsapp:p?.whatsapp||'',plan:sub?.plan_id||'inicial',id:coachId};}
@@ -112,7 +122,7 @@
    await refresh();if(g!==generation)return;
    if(role==='student'){
     const code=pendingCode||user.user_metadata?.invite_code;
-    if(code&&!memberships.some(m=>['pending','approved'].includes(m.status))){
+    if(code&&!memberships.length){
      try{await rpc('ent_request_membership',{p_code:code});pendingCode='';await refresh();}catch(e){toast(friendly(e));}
     }
    }
@@ -170,11 +180,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.17 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.18 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.17</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.18</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
