@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.9.12';
+const APP_VERSION='1.9.13';
 const icons={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5"/>',dumbbell:'<path d="m6 6 12 12M4 9l5-5M2 7l5-5M15 20l5-5M17 22l5-5M5 10l5-5M14 19l5-5"/>',book:'<path d="M12 5v16M3 3h4a5 5 0 0 1 5 2 5 5 0 0 1 5-2h4v16h-4a5 5 0 0 0-5 2 5 5 0 0 0-5-2H3z"/>',chart:'<path d="M4 3v18h17M8 16v-5M13 16V7M18 16v-9"/>',card:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 10h20M6 15h4"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',activity:'<path d="M2 12h5l3-9 4 18 3-9h5"/>',settings:'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',message:'<path d="M21 11a8 8 0 0 1-8 8H5l-3 3V5a3 3 0 0 1 3-3h8a8 8 0 0 1 8 9zM7 8h9M7 12h6"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',back:'<path d="M19 12H5m5-5-5 5 5 5"/>'};
 const icon=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.activity}</svg>`;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -13,6 +13,7 @@ upgradeState();
 let role='coach',page='Inicio',studentId=state.students.find(s=>s.status==='active')?.id||'',detailId=null,search='',filter='all',timerEnd=0,timerId=null,deferredPrompt=null;
 let timerTotal=0,timerCompleted=false,restSoundEnabled=true,restAudio=null,restAlarmId=null,restAlarmActive=false;
 const restAlarmNodes=new Map();
+let restBellBuffer=null,restBellLoading=null;
 const $=s=>document.querySelector(s);const main=$('#main');const modal=$('#modal');
 function save(){try{localStorage.setItem('entrenar-v1',JSON.stringify(state));return true;}catch{storageOK=false;toast('No se pudo guardar. Exportá una copia antes de cerrar.');return false;}}
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('visible');clearTimeout(toast.timeout);toast.timeout=setTimeout(()=>t.classList.remove('visible'),3500);}
@@ -310,16 +311,31 @@ function syncRestTimerUI(){
 }
 function unlockRestAudio(){
  if(!restSoundEnabled)return;
- try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;if(!restAudio||restAudio.state==='closed')restAudio=new Audio();if(restAudio.state!=='running')Promise.resolve(restAudio.resume()).catch(()=>{});}catch{}
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+  if(!restAudio||restAudio.state==='closed'){restAudio=new Audio();restBellBuffer=null;restBellLoading=null;}
+  if(restAudio.state!=='running')Promise.resolve(restAudio.resume()).then(()=>playRestChime()).catch(()=>{});
+  if(!restBellBuffer&&!restBellLoading){
+   const context=restAudio;
+   restBellLoading=fetch('/sounds/rest-bell.mp3').then(response=>{if(!response.ok)throw new Error('bell');return response.arrayBuffer();}).then(bytes=>context.decodeAudioData(bytes)).then(buffer=>{if(restAudio===context){restBellBuffer=buffer;playRestChime();}}).catch(()=>{if(restAudio===context)restBellLoading=null;});
+  }
+ }catch{}
 }
 function playRestChime(){
- if(!restSoundEnabled||!restAudio||restAudio.state!=='running'||document.hidden)return;
- try{const start=restAudio.currentTime;for(const [frequency,delay] of [[880,0],[880,.22],[1046.5,.44]]){const oscillator=restAudio.createOscillator(),gain=restAudio.createGain();oscillator.type='square';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,start+delay);gain.gain.linearRampToValueAtTime(.12,start+delay+.012);gain.gain.exponentialRampToValueAtTime(.001,start+delay+.15);oscillator.connect(gain);gain.connect(restAudio.destination);restAlarmNodes.set(oscillator,gain);oscillator.onended=()=>{restAlarmNodes.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start(start+delay);oscillator.stop(start+delay+.16);}}catch{}
+ if(!restAlarmActive||!timerCompleted||!restSoundEnabled||role!=='student'||page!=='Mi rutina'||!detailId||!restAudio||restAudio.state!=='running'||document.hidden||!restBellBuffer||restAlarmNodes.size)return;
+ try{
+  const source=restAudio.createBufferSource(),gain=restAudio.createGain();
+  source.buffer=restBellBuffer;source.loop=true;gain.gain.value=1;
+  source.connect(gain);gain.connect(restAudio.destination);restAlarmNodes.set(source,gain);
+  source.onended=()=>{restAlarmNodes.delete(source);source.disconnect();gain.disconnect();};source.start();
+ }catch{stopRestBellVoice();}
 }
-function stopRestAlarm(){
- restAlarmActive=false;clearInterval(restAlarmId);restAlarmId=null;
+function stopRestBellVoice(){
  for(const [node,gain] of restAlarmNodes){try{node.onended=null;node.stop();node.disconnect();gain.disconnect();}catch{}}
  restAlarmNodes.clear();
+}
+function stopRestAlarm(){
+ restAlarmActive=false;clearInterval(restAlarmId);restAlarmId=null;stopRestBellVoice();
 }
 function startRestAlarm(){
  stopRestAlarm();if(!restSoundEnabled||role!=='student'||page!=='Mi rutina'||!detailId)return;
@@ -338,7 +354,7 @@ function tickRestTimer(){
  syncRestTimerUI();
 }
 function startTimer(seconds){stopTimer();if(!Number.isFinite(seconds)||seconds<=0||seconds>600){toast('Este ejercicio no tiene un descanso válido programado.');return;}unlockRestAudio();timerTotal=seconds;timerEnd=Date.now()+seconds*1000;tickRestTimer();timerId=setInterval(tickRestTimer,250);}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickRestTimer();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopRestBellVoice();else{tickRestTimer();playRestChime();}});
 function completeWorkoutExercise(button){
  const rid=button.dataset.rid,r=state.routines.find(x=>x.id===rid),n=Number(button.dataset.index);if(!r||!Number.isInteger(n)||n<0||n>=r.exercises.length)return;
  const d=ensureDraft(rid),wasDone=d.done.includes(n);d.done=wasDone?d.done.filter(x=>x!==n):[...d.done,n];
