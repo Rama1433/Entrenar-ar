@@ -1,6 +1,6 @@
-# Entrenar · V1.10.1 · Supabase
+# Entrenar · V1.10.2 · Supabase
 
-**V1.10.1:** agrega Gestión a la barra inferior del profesor. Si ya aplicaste el SQL 12 de V1.10.0, no necesitás ejecutar ningún SQL nuevo: solo subir los archivos del ZIP a GitHub. Si todavía no lo aplicaste, sigue siendo necesario para guardar las herramientas Profesional.
+**V1.10.2:** ajustes de responsive y formato de importes. No requiere SQL nuevo si ya aplicaste el SQL 12; solo subir todos los archivos del ZIP a GitHub y reabrir la PWA.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -273,3 +273,13 @@ Guía detallada en `PROFESIONAL.md`. Verificado localmente en PostgreSQL con RLS
 ## Cambios V1.10.1
 
 Barra móvil del profesor: Inicio, Alumnos, Rutinas, Ejercicios y Gestión. Cinco columnas adaptadas al ancho disponible, con área táctil y safe area inferior. Gestión permanece marcado al navegar por Cuotas y cobros, Planificación y Seguimiento. El acceso desde el perfil también se conserva. Sin migraciones ni cambios de datos.
+
+
+## Cambios V1.10.2
+
+- Cobros: mes y año en desplegables independientes, evitando el ancho mínimo y zoom del selector de mes en iPhone. Botones ajustados a dos columnas y exportación en fila completa en móvil.
+- Identidad del equipo: tarjeta con márgenes interiores y separación de título, logo, descripción y botón. Controles de archivo, fechas, meses y formularios limitados al ancho del modal, con texto legible en celular.
+- Todos los campos de dinero del administrador y profesor muestran miles con punto y decimales con coma mientras se escribe. Ejemplos: 10.000 y 10.000,50. Admite pegar esos formatos o un valor numérico con punto decimal sin miles, como 10000.50.
+- Edición con cursor, selección, retroceso y Delete; se preservan los centavos. En los formularios existentes, los importes también aparecen formateados al abrirlos.
+- Los cálculos siguen usando centavos enteros y los mismos límites de importe. No cambia cuotas generadas, registros de pagos, suscripciones, exportación CSV ni datos históricos. No afecta peso, altura, cargas, repeticiones ni teléfonos.
+- Validado localmente con los cuatro formularios monetarios (precio de plan, pago a Entrenar, cuota de alumno y pago de alumno), los valores enviados por RPC y revisión móvil a 320/390 píxeles. La comprobación visual se realizó en Chromium; conviene repetir el recorrido del video en el iPhone real luego del despliegue.

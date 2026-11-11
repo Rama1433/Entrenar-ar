@@ -18,7 +18,7 @@
  function validDate(v){return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;}
  function shiftDays(v,days){const d=new Date(v+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
  function periodEnd(start){const d=new Date(start+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return shiftDays(d.toISOString().slice(0,10),-1);}
- function parseAmount(raw,allowEmpty=false){const t=String(raw).trim();if(!t&&allowEmpty)return null;if(!/^\d+(?:[.,]\d{1,2})?$/.test(t))throw Error('Ingresá un importe sin separadores de miles, con hasta dos decimales.');const [whole,dec='']=t.replace(',','.').split('.');const n=Number(whole)*100+Number(dec.padEnd(2,'0'));if(!Number.isSafeInteger(n)||n<=0||n>100000000000)throw Error('El importe debe ser mayor a cero y no superar $1.000.000.000.');return n;}
+ function parseAmount(raw,allowEmpty=false){return parseMoneyCentsAR(raw,{allowEmpty,maxCents:100000000000});}
  function status(c){if(c.status==='inactive')return 'suspended';if(c.expiresAt&&c.expiresAt<today())return 'expired';if(c.status==='pending')return 'pending';return c.subscription==='trial'?'trial':'active';}
  const statusNames={active:'Activo',trial:'En prueba',expired:'Vencido',suspended:'Suspendido',pending:'Pendiente'};
  const tag=c=>`<span class="admin-status ${status(c)}">${statusNames[status(c)]}</span>`;

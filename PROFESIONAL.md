@@ -1,4 +1,4 @@
-# Entrenar Profesional · Guía V1.10.1
+# Entrenar Profesional · Guía V1.10.2
 
 ## Acceso
 
@@ -7,7 +7,7 @@ Requiere Profesional vigente. En demo se puede activar Probar Profesional sin cr
 
 ## Cuotas y cobros
 
-1. Configurar cuotas: elegir alumno activo, importe mensual, día de vencimiento (1 a 28) y mes inicial. Podés desmarcar la cuota para dejar de incluirla en generaciones futuras.
+1. Configurar cuotas: elegir alumno activo, importe mensual (ej.: 10.000,50), día de vencimiento (1 a 28) y mes inicial. Podés desmarcar la cuota para dejar de incluirla en generaciones futuras.
 2. Elegir el mes y tocar Generar cuotas del mes. Es una acción manual, repetible sin duplicaciones. Los alumnos sin configuración no tienen una cuota generada.
 3. Registrar pago: elegir el alumno con saldo, importe recibido, fecha y medio. Admite pagos parciales y evita superar el saldo. Confirmá solamente pagos realmente recibidos.
 4. Para corregir un error: Anular registro y completar el motivo. Conserva el registro y vuelve a sumar ese importe al saldo pendiente. No devuelve dinero ni modifica cuentas bancarias.
