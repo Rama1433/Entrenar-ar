@@ -1,6 +1,6 @@
-# Entrenar · V1.9.18 · Supabase
+# Entrenar · V1.9.19 · Supabase
 
-**Antes de publicar V1.9.18:** ejecutá `setup/Entrenar_08_Correcciones_Entrenamientos_Alumnos.sql` en el SQL Editor de Supabase. Incluye la duración del SQL 06 si faltaba y corrige la revinculación/reactivación. Conserva datos y permisos entre cuentas. Si ya tenés un entrenamiento terminado sin guardar, después de ejecutar SQL 08 volvé a esa misma pestaña y tocá Guardar entrenamiento antes de cerrarla. Luego subí los archivos actualizados a GitHub.
+**Antes de publicar V1.9.19:** ejecutá `setup/Entrenar_09_Plantillas_Rutinas.sql` en el SQL Editor de Supabase (después de los SQL 07 y 08). Luego subí el contenido actualizado a GitHub. El SQL 09 permite guardar las copias y asignaciones de forma atómica, sin modificar registros existentes al ejecutarse.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -13,7 +13,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.18.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.19.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -195,3 +195,14 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - Reactivación compatible con vinculaciones anteriores del mismo equipo; sigue respetando cupos y el bloqueo si hay otro profesor.
 - Se corrige la etiqueta de alumno sin objetivo, que aparecía como Profesor.
 - Se conserva la observación, duración y operación del entrenamiento al reintentar un guardado fallido.
+
+## Cambios V1.9.19
+
+- Plantillas de Entrenar y Mis rutinas, con vista previa y copias editables.
+- Nuevo editor con biblioteca, búsqueda, filtros, reordenamiento y copia de valores.
+- Duplicar rutina y asignar a varios alumnos al guardar.
+- Biblioteca de ejercicios en filas compactas y catálogo inicial listo para adaptar.
+- SQL 09: guardado atómico, control de propiedad/equipo e ID estable para reintentos.
+- Texto redundante del descanso oculto visualmente; anuncio accesible conservado.
+- Invitación de WhatsApp con puntos de código y enlace UTF-8 normalizado.
+- Ver RUTINAS.md para el alcance y el uso.
