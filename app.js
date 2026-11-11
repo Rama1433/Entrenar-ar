@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.9.11';
+const APP_VERSION='1.9.12';
 const icons={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5"/>',dumbbell:'<path d="m6 6 12 12M4 9l5-5M2 7l5-5M15 20l5-5M17 22l5-5M5 10l5-5M14 19l5-5"/>',book:'<path d="M12 5v16M3 3h4a5 5 0 0 1 5 2 5 5 0 0 1 5-2h4v16h-4a5 5 0 0 0-5 2 5 5 0 0 0-5-2H3z"/>',chart:'<path d="M4 3v18h17M8 16v-5M13 16V7M18 16v-9"/>',card:'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 10h20M6 15h4"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',plus:'<path d="M12 5v14M5 12h14"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',activity:'<path d="M2 12h5l3-9 4 18 3-9h5"/>',settings:'<path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',message:'<path d="M21 11a8 8 0 0 1-8 8H5l-3 3V5a3 3 0 0 1 3-3h8a8 8 0 0 1 8 9zM7 8h9M7 12h6"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',back:'<path d="M19 12H5m5-5-5 5 5 5"/>'};
 const icon=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.activity}</svg>`;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -11,7 +11,8 @@ let state;let storageOK=true;try{const raw=localStorage.getItem('entrenar-v1');s
 function upgradeState(){state.coach.email??='';state.coach.whatsapp??='';state.coachNotices??=[];state.readCoachNotices??=[];state.measurements??=[];state.readStudentNotices??={};}
 upgradeState();
 let role='coach',page='Inicio',studentId=state.students.find(s=>s.status==='active')?.id||'',detailId=null,search='',filter='all',timerEnd=0,timerId=null,deferredPrompt=null;
-let workoutClockId=null,timerTotal=0,timerCompleted=false,restSoundEnabled=true,restAudio=null;
+let timerTotal=0,timerCompleted=false,restSoundEnabled=true,restAudio=null,restAlarmId=null,restAlarmActive=false;
+const restAlarmNodes=new Map();
 const $=s=>document.querySelector(s);const main=$('#main');const modal=$('#modal');
 function save(){try{localStorage.setItem('entrenar-v1',JSON.stringify(state));return true;}catch{storageOK=false;toast('No se pudo guardar. Exportá una copia antes de cerrar.');return false;}}
 function toast(message){const t=$('#toast');t.textContent=message;t.classList.add('visible');clearTimeout(toast.timeout);toast.timeout=setTimeout(()=>t.classList.remove('visible'),3500);}
@@ -95,7 +96,7 @@ function renderChrome(){
  $('#mobile-nav').innerHTML=(role==='coach'?items.slice(0,4):role==='student'?items.slice(0,3):items).map(([name,ic])=>`<button type="button" data-page="${name}" class="${page===name?'active':''}" ${page===name?'aria-current="page"':''}>${icon(ic)}${name}</button>`).join('');
 }
 
-function render(){stopWorkoutClock();renderChrome();if(role==='coach'&&page==='Perfil')return renderCoachProfile();if(role==='coach'&&page==='Notificaciones')return renderCoachInbox();if(role==='student'&&page==='Perfil')return renderStudentProfile();if(role==='admin'&&page==='Comunicados')return renderAdminMessages();if(role==='coach')renderCoach();else if(role==='student')renderStudent();else renderAdmin();}
+function render(){if(role!=='student'||page!=='Mi rutina'||!detailId)stopRestAlarm();renderChrome();if(role==='coach'&&page==='Perfil')return renderCoachProfile();if(role==='coach'&&page==='Notificaciones')return renderCoachInbox();if(role==='student'&&page==='Perfil')return renderStudentProfile();if(role==='admin'&&page==='Comunicados')return renderAdminMessages();if(role==='coach')renderCoach();else if(role==='student')renderStudent();else renderAdmin();}
 function studentTable(list,limited=false){if(!list.length)return empty('Todavía no hay alumnos','Invitá a tu primer alumno para empezar a acompañarlo.');return `<div class="table-wrap"><table><thead><tr><th>Alumno</th><th class="hide-mobile">Rutinas</th><th>Estado</th><th><span class="hide-mobile">Ver ficha</span></th></tr></thead><tbody>${list.slice(0,limited?4:999).map(s=>`<tr><td>${person(s)}</td><td class="hide-mobile">${studentRoutines(s.id).length} asignadas</td><td>${badge(s.status)}</td><td><button class="circle-btn" data-action="student-detail" data-id="${esc(s.id)}" aria-label="Ver ficha de ${esc(s.name)}">→</button></td></tr>`).join('')}</tbody></table></div>`;}
 function empty(title,desc){return `<div class="empty"><h3>${title}</h3><p>${desc}</p></div>`;}
 function week(){const d=new Date();let n=(d.getDay()+6)%7;const start=new Date(d);start.setDate(d.getDate()-n);return `<div class="week">${['L','M','M','J','V','S','D'].map((v,i)=>{const day=new Date(start);day.setDate(start.getDate()+i);return `<div class="day ${i===n?'today':''}">${v}<span>${day.getDate()}</span></div>`;}).join('')}</div>`;}
@@ -238,14 +239,13 @@ function renderWorkout(s,r){
  };
  const pending=r.exercises.map((x,i)=>!draft.done.includes(i)?exerciseCard(x,i):'').join('');
  const completed=r.exercises.map((x,i)=>draft.done.includes(i)?exerciseCard(x,i):'').join('');
- const seconds=workoutSeconds(draft);
  main.innerHTML=btn(icon('back')+' Mis rutinas','student-routines','ghost')+heading('UNA SERIE A LA VEZ',esc(r.name),`${count} de ${r.exercises.length} ejercicios completados`)+`
- <section class="workout-overview"><div class="row"><span>Tu avance</span><strong>${count} / ${r.exercises.length}</strong></div><div class="progress"><span style="width:${r.exercises.length?count/r.exercises.length*100:0}%"></span></div><div class="workout-clock"><span>${icon('clock')} Tiempo de entrenamiento</span><strong id="workout-elapsed">${seconds===null?'—':elapsedClock(seconds)}</strong></div><p class="workout-time-hint">Incluye los descansos${draft.timingFromResume?' · contado desde que retomaste esta sesión':''}.</p></section>
+ <section class="workout-overview"><div class="row"><span>Tu avance</span><strong>${count} / ${r.exercises.length}</strong></div><div class="progress"><span style="width:${r.exercises.length?count/r.exercises.length*100:0}%"></span></div></section>
  ${count<r.exercises.length?restDock():''}
  <div class="workout-exercises workout-pending">${pending}</div>
  ${count?`<details class="workout-completed"><summary>${icon('check')} Ejercicios completados <span>${count}</span></summary><div class="workout-exercises">${completed}</div></details>`:''}
- <section class="panel workout-finish"><div class="panel-heading"><h2 tabindex="-1">${count===r.exercises.length?'¡Rutina completada!':'¿Cómo te sentiste?'}</h2>${count===r.exercises.length?'':'<span class="badge neutral">Opcional</span>'}</div><div class="panel-content">${count===r.exercises.length?`<div class="workout-duration-summary"><span>Tu tiempo total</span><strong>${seconds===null?'Sin tiempo registrado':durationLabel(seconds)}</strong><p>Un paso más para tu progreso.</p></div>`:''}<label class="sr-label" for="workout-note">Observaciones de tu entrenamiento</label><textarea id="workout-note" data-rid="${esc(r.id)}" maxlength="1000" placeholder="Dejá una observación para tu profe…">${esc(draft.note)}</textarea><div style="margin-top:17px">${btn('Guardar entrenamiento '+icon('check'),'finish-workout','primary full',`data-id="${esc(r.id)}" ${count!==r.exercises.length?'disabled':''}`)}</div><p class="note-text" style="margin-top:12px">${count===r.exercises.length?'¡Listo! Guardá la sesión para sumarla a tu progreso.':'Completá los ejercicios para guardar la sesión. Tu avance se conserva si salís.'}</p></div></section>`;
- syncRestTimerUI();startWorkoutClock(draft);
+ <section class="panel workout-finish"><div class="panel-heading"><h2 tabindex="-1">${count===r.exercises.length?'¡Rutina completada!':'¿Cómo te sentiste?'}</h2>${count===r.exercises.length?'':'<span class="badge neutral">Opcional</span>'}</div><div class="panel-content">${count===r.exercises.length?btn('Ver resumen','workout-summary','ghost',`data-id="${esc(r.id)}"`):''}<label class="sr-label" for="workout-note">Observaciones de tu entrenamiento</label><textarea id="workout-note" data-rid="${esc(r.id)}" maxlength="1000" placeholder="Dejá una observación para tu profe…">${esc(draft.note)}</textarea><div style="margin-top:17px">${btn('Guardar entrenamiento '+icon('check'),'finish-workout','primary full',`data-id="${esc(r.id)}" ${count!==r.exercises.length?'disabled':''}`)}</div><p class="note-text" style="margin-top:12px">${count===r.exercises.length?'¡Listo! Guardá la sesión para sumarla a tu progreso.':'Completá los ejercicios para guardar la sesión. Tu avance se conserva si salís.'}</p></div></section>`;
+ syncRestTimerUI();
 }
 
 function planPriceLabel(pid){const cents=state.adminPrices?.[pid];return Number.isSafeInteger(cents)&&cents>0?new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(cents/100):'Precio por definir';}
@@ -296,18 +296,16 @@ function workoutSeconds(d,now=Date.now()){
 }
 function elapsedClock(seconds){const h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return (h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
 function durationLabel(seconds){if(!Number.isInteger(seconds)||seconds<0)return 'Sin tiempo registrado';const h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return (h?h+' h ':'')+m+' min '+s+' s';}
-function stopWorkoutClock(){clearInterval(workoutClockId);workoutClockId=null;}
-function startWorkoutClock(d){stopWorkoutClock();if(!d.startedAt||d.finishedAt)return;workoutClockId=setInterval(()=>{const el=$('#workout-elapsed');if(!el){stopWorkoutClock();return;}const n=workoutSeconds(d);el.textContent=n===null?'—':elapsedClock(n);},1000);}
-function restDock(){return `<section class="rest-dock" id="timer-panel" aria-label="Descanso entre series"><div class="rest-clock"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="rest-track" cx="22" cy="22" r="19"/><circle id="rest-progress" cx="22" cy="22" r="19" pathLength="100"/></svg><strong id="timer-value" role="timer" aria-live="off">${timerEnd?timerText():'00:00'}</strong></div><div class="rest-copy"><strong id="rest-state">Descanso entre series</strong><small id="rest-detail">Tocá Descansar cuando lo necesites.</small></div><div class="rest-controls">${btn('Detener','stop-rest','outline',timerEnd?'':'disabled')}<button type="button" class="rest-sound" data-action="toggle-rest-sound" aria-pressed="${restSoundEnabled}" aria-label="${restSoundEnabled?'Desactivar':'Activar'} sonido al terminar el descanso">Sonido ${restSoundEnabled?'activado':'desactivado'}</button></div><span id="rest-announcement" class="sr-label" role="status" aria-live="polite"></span></section>`;}
+function restDock(){return `<section class="rest-dock" id="timer-panel" aria-label="Descanso entre series"><div class="rest-clock"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="rest-track" cx="22" cy="22" r="19"/><circle id="rest-progress" cx="22" cy="22" r="19" pathLength="100"/></svg><strong id="timer-value" role="timer" aria-live="off">${timerEnd?timerText():'00:00'}</strong></div><div class="rest-copy"><strong id="rest-state">Descanso entre series</strong><small id="rest-detail">Tocá Descansar cuando lo necesites.</small></div><div class="rest-controls">${btn('Detener','stop-rest','outline',timerEnd||timerCompleted?'':'disabled')}<button type="button" class="rest-sound" data-action="toggle-rest-sound" aria-pressed="${restSoundEnabled}" aria-label="${restSoundEnabled?'Desactivar':'Activar'} sonido al terminar el descanso">Sonido ${restSoundEnabled?'activado':'desactivado'}</button></div><span id="rest-announcement" class="sr-label" role="status" aria-live="polite"></span></section>`;}
 function timerText(){const left=timerEnd?Math.max(0,Math.ceil((timerEnd-Date.now())/1000)):0;return elapsedClock(left);}
 function syncRestTimerUI(){
  const panel=$('#timer-panel');if(!panel)return;
  const running=timerEnd>0,remaining=running?Math.max(0,timerEnd-Date.now()):0;
- panel.classList.toggle('rest-running',running);panel.classList.toggle('rest-finished',timerCompleted);
+ panel.classList.toggle('rest-alarming',restAlarmActive);panel.classList.toggle('rest-running',running);panel.classList.toggle('rest-finished',timerCompleted);
  $('#timer-value').textContent=timerText();$('#rest-state').textContent=running?'Descanso en curso':timerCompleted?'¡Descanso terminado!':'Descanso entre series';
- $('#rest-detail').textContent=running?'Respirá. El tiempo está corriendo.':timerCompleted?'Cuando estés listo, seguí con tu serie.':'Tocá Descansar cuando lo necesites.';
+ $('#rest-detail').textContent=running?'Respirá. El tiempo está corriendo.':timerCompleted?(restAlarmActive?'Tocá Detener para apagar la alarma.':'Cuando estés listo, seguí con tu serie.'):'Tocá Descansar cuando lo necesites.';
  $('#rest-progress').style.strokeDashoffset=String(running&&timerTotal?100*(1-Math.max(0,Math.min(1,remaining/(timerTotal*1000)))):timerCompleted?100:0);
- panel.querySelector('[data-action="stop-rest"]').disabled=!running;
+ panel.querySelector('[data-action="stop-rest"]').disabled=!running&&!timerCompleted;
  const sound=panel.querySelector('[data-action="toggle-rest-sound"]');sound.textContent='Sonido '+(restSoundEnabled?'activado':'desactivado');sound.setAttribute('aria-pressed',String(restSoundEnabled));sound.setAttribute('aria-label',(restSoundEnabled?'Desactivar':'Activar')+' sonido al terminar el descanso');
 }
 function unlockRestAudio(){
@@ -316,23 +314,39 @@ function unlockRestAudio(){
 }
 function playRestChime(){
  if(!restSoundEnabled||!restAudio||restAudio.state!=='running'||document.hidden)return;
- try{const start=restAudio.currentTime;for(const [frequency,delay] of [[784,0],[1046.5,.2]]){const oscillator=restAudio.createOscillator(),gain=restAudio.createGain();oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,start+delay);gain.gain.linearRampToValueAtTime(.15,start+delay+.015);gain.gain.exponentialRampToValueAtTime(.001,start+delay+.17);oscillator.connect(gain);gain.connect(restAudio.destination);oscillator.start(start+delay);oscillator.stop(start+delay+.18);}}catch{}
+ try{const start=restAudio.currentTime;for(const [frequency,delay] of [[880,0],[880,.22],[1046.5,.44]]){const oscillator=restAudio.createOscillator(),gain=restAudio.createGain();oscillator.type='square';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,start+delay);gain.gain.linearRampToValueAtTime(.12,start+delay+.012);gain.gain.exponentialRampToValueAtTime(.001,start+delay+.15);oscillator.connect(gain);gain.connect(restAudio.destination);restAlarmNodes.set(oscillator,gain);oscillator.onended=()=>{restAlarmNodes.delete(oscillator);oscillator.disconnect();gain.disconnect();};oscillator.start(start+delay);oscillator.stop(start+delay+.16);}}catch{}
 }
-function stopTimer(){timerEnd=0;timerTotal=0;timerCompleted=false;clearInterval(timerId);timerId=null;syncRestTimerUI();}
+function stopRestAlarm(){
+ restAlarmActive=false;clearInterval(restAlarmId);restAlarmId=null;
+ for(const [node,gain] of restAlarmNodes){try{node.onended=null;node.stop();node.disconnect();gain.disconnect();}catch{}}
+ restAlarmNodes.clear();
+}
+function startRestAlarm(){
+ stopRestAlarm();if(!restSoundEnabled||role!=='student'||page!=='Mi rutina'||!detailId)return;
+ restAlarmActive=true;playRestChime();restAlarmId=setInterval(()=>{if(!restAlarmActive||!timerCompleted){stopRestAlarm();return;}playRestChime();},1300);
+}
+function showWorkoutSummary(rid){
+ const r=state.routines.find(x=>x.id===rid),d=state.drafts[draftKey(studentId,rid)];
+ if(!r||!d?.finishedAt||!r.exercises.every((_,i)=>d.done.includes(i)))return;
+ const seconds=workoutSeconds(d),first=selectedStudent()?.name?.split(' ')[0]||'';
+ openModal('¡Excelente'+(first?', '+esc(first):'')+'! 👏','Completaste tu rutina. Cada entrenamiento suma.',`<div class="workout-duration-summary"><span>Tu tiempo fue de</span><strong>${seconds===null?'Sin tiempo registrado':durationLabel(seconds)}</strong><p>Incluye tus descansos. Seguí siempre a tu ritmo.</p></div><p class="note-text">Podés dejar una observación y guardar el entrenamiento para sumarlo a tu progreso.</p><div class="form-actions">${btn('Continuar','close-modal','primary full')}</div>`);
+}
+function stopTimer(){stopRestAlarm();timerEnd=0;timerTotal=0;timerCompleted=false;clearInterval(timerId);timerId=null;syncRestTimerUI();}
 function tickRestTimer(){
  if(!timerEnd)return;
- if(Date.now()>=timerEnd){timerEnd=0;clearInterval(timerId);timerId=null;timerCompleted=true;syncRestTimerUI();const announcement=$('#rest-announcement');if(announcement)announcement.textContent='Descanso terminado. Podés continuar.';playRestChime();toast('Descanso terminado. Seguí a tu ritmo.');return;}
+ if(Date.now()>=timerEnd){timerEnd=0;clearInterval(timerId);timerId=null;timerCompleted=true;startRestAlarm();syncRestTimerUI();const announcement=$('#rest-announcement');if(announcement)announcement.textContent='Descanso terminado. Podés continuar.';toast('Descanso terminado. Seguí a tu ritmo.');return;}
  syncRestTimerUI();
 }
 function startTimer(seconds){stopTimer();if(!Number.isFinite(seconds)||seconds<=0||seconds>600){toast('Este ejercicio no tiene un descanso válido programado.');return;}unlockRestAudio();timerTotal=seconds;timerEnd=Date.now()+seconds*1000;tickRestTimer();timerId=setInterval(tickRestTimer,250);}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){tickRestTimer();const d=state.drafts[draftKey(studentId,detailId)];if(d&&$('#workout-elapsed'))$('#workout-elapsed').textContent=elapsedClock(workoutSeconds(d)||0);}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)tickRestTimer();});
 function completeWorkoutExercise(button){
  const rid=button.dataset.rid,r=state.routines.find(x=>x.id===rid),n=Number(button.dataset.index);if(!r||!Number.isInteger(n)||n<0||n>=r.exercises.length)return;
  const d=ensureDraft(rid),wasDone=d.done.includes(n);d.done=wasDone?d.done.filter(x=>x!==n):[...d.done,n];
  const allDone=r.exercises.every((_,i)=>d.done.includes(i));if(allDone){d.finishedAt=new Date().toISOString();stopTimer();}else delete d.finishedAt;
  save();render();
  const next=wasDone?n:r.exercises.findIndex((_,i)=>!d.done.includes(i));
- const advance=()=>{const target=next>=0?$('[data-exercise-index="'+next+'"]'):$('.workout-finish');if(!target)return;target.classList.add('workout-next');target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});target.querySelector('h2')?.focus({preventScroll:true});};
+ const advance=()=>{if(modal.open)return;const target=next>=0?$('[data-exercise-index="'+next+'"]'):$('.workout-finish');if(!target)return;target.classList.add('workout-next');target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});target.querySelector('h2')?.focus({preventScroll:true});};
+ if(allDone){showWorkoutSummary(rid);return;}
  if(window.requestAnimationFrame)window.requestAnimationFrame(advance);else advance();
 }
 
@@ -352,7 +366,7 @@ if(a==='confirm-broadcast'){
 }
 
 if(a==='select-plan'){const p=plans.find(x=>x.id===itemId);if(p.limit&&activeStudents().length>p.limit){toast('Tenés más alumnos activos que los permitidos en ese plan.');return;}state.coach.plan=itemId;const c=state.adminCoaches.find(x=>x.id==='c1');if(c)c.plan=itemId;save();render();toast('Plan de prueba actualizado. No se realizó ningún cobro.');return;}
-if(a==='start-workout'){ensureDraft(itemId);save();return navigate('Mi rutina',itemId);}if(a==='toggle-exercise')return completeWorkoutExercise(b);if(a==='toggle-rest-sound'){restSoundEnabled=!restSoundEnabled;if(restSoundEnabled)unlockRestAudio();syncRestTimerUI();return;}if(a==='rest')return startTimer(Number(b.dataset.seconds));if(a==='stop-rest')return stopTimer();if(a==='finish-workout'){const r=state.routines.find(x=>x.id===itemId);const d=ensureDraft(itemId);if(!r||!r.exercises.every((_,i)=>d.done.includes(i)))return;d.finishedAt??=new Date().toISOString();state.sessions.unshift({durationSeconds:workoutSeconds(d),id:id(),studentId,routineId:r.id,routineName:r.name,date:today(),completedAt:new Date().toISOString(),note:d.note,exercises:r.exercises.map((x,i)=>({...x,name:getExercise(x.exerciseId)?.name||'Ejercicio',load:d.logs[i]?.load??'',actualReps:d.logs[i]?.actualReps??''}))});delete state.drafts[draftKey(studentId,itemId)];save();stopTimer();navigate('Progreso');toast('¡Entrenamiento guardado! Un paso más.');return;}
+if(a==='start-workout'){ensureDraft(itemId);save();return navigate('Mi rutina',itemId);}if(a==='toggle-exercise')return completeWorkoutExercise(b);if(a==='workout-summary')return showWorkoutSummary(itemId);if(a==='toggle-rest-sound'){restSoundEnabled=!restSoundEnabled;if(restSoundEnabled){unlockRestAudio();if(timerCompleted)startRestAlarm();}else stopRestAlarm();syncRestTimerUI();return;}if(a==='rest')return startTimer(Number(b.dataset.seconds));if(a==='stop-rest')return stopTimer();if(a==='finish-workout'){const r=state.routines.find(x=>x.id===itemId);const d=ensureDraft(itemId);if(!r||!r.exercises.every((_,i)=>d.done.includes(i)))return;d.finishedAt??=new Date().toISOString();state.sessions.unshift({durationSeconds:workoutSeconds(d),id:id(),studentId,routineId:r.id,routineName:r.name,date:today(),completedAt:new Date().toISOString(),note:d.note,exercises:r.exercises.map((x,i)=>({...x,name:getExercise(x.exerciseId)?.name||'Ejercicio',load:d.logs[i]?.load??'',actualReps:d.logs[i]?.actualReps??''}))});delete state.drafts[draftKey(studentId,itemId)];save();stopTimer();navigate('Progreso');toast('¡Entrenamiento guardado! Un paso más.');return;}
 if(a==='admin-plans')return navigate('Planes');if(a==='admin-coaches')return navigate('Profesores');if(a==='new-coach')return coachForm();if(a==='edit-coach')return coachForm(state.adminCoaches.find(x=>x.id===itemId));if(a==='coach-name')return openModal('Nombre del profesor','Perfil de prueba.',`<form id="coach-name-form">${field('Nombre','name',state.coach.name,'text','required maxlength="80"')}${actions('Guardar')}</form>`);
 if(a==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='Entrenar_copia_'+today()+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Copia de seguridad descargada.');return;}if(a==='import')return $('#import-file').click();if(a==='reset')return confirmModal('¿Restablecer la prueba?','Se reemplazarán tus datos locales por los ejemplos iniciales. Podés exportar una copia antes.','confirm-reset');if(a==='confirm-reset'){state=seed();upgradeState();save();studentId='s1';stopTimer();modal.close();render();toast('Prueba restablecida.');return;}
 if(a==='install-help')return openModal('Entrenar, siempre a mano','Instalala desde el navegador de tu dispositivo.',`<div class="stack"><div><h3>iPhone · Safari</h3><p class="note-text">Abrí el enlace de Entrenar en Safari. Tocá Compartir y elegí “Agregar a pantalla de inicio”.</p></div><div><h3>Android · Chrome</h3><p class="note-text">Abrí el menú ⋮ y elegí “Instalar aplicación” o “Agregar a pantalla principal”.</p></div><div><h3>PC · Chrome o Edge</h3><p class="note-text">Usá el ícono de instalación de la barra de direcciones o la opción de instalar desde el menú del navegador.</p></div><div class="subtle">Agregar la app no cambia tu cuenta. Necesitás conexión para consultar y guardar tus datos en línea.</div></div>`);

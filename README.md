@@ -1,4 +1,4 @@
-# Entrenar · V1.9.11 · Supabase
+# Entrenar · V1.9.12 · Supabase
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -11,7 +11,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.11.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.12.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -141,3 +141,9 @@ SDK de navegador incluido: @supabase/supabase-js 2.119.0, sin CDN en ejecución.
 - Descanso: panel visible al desplazarse, anillo de progreso y animación, texto de estado, sonido opcional al llegar a cero. El sonido se prepara con la pulsación de Descansar; depende de volumen, permisos y de que el navegador mantenga la app activa. No se garantiza sonido con pantalla bloqueada o en segundo plano.
 - Tiempo de entrenamiento: desde Comenzar hasta marcar el último ejercicio; incluye descansos y tiempo fuera de la pantalla. Se congela al completar y se conserva ante un error al guardar. Volver un ejercicio a pendiente reanuda el conteo desde el comienzo original. Sesiones antiguas sin tiempo siguen sin duración. Los borradores antiguos cuentan desde que se retoman.
 - Aplicar Entrenar_06_Duracion_Entrenamiento.sql antes de subir este ZIP. Guarda un entero de segundos por sesión. No agrega archivos ni historial de ticks a la base, ni modifica permisos.
+
+## Cambios V1.9.12
+
+- El tiempo total se calcula en silencio, sin cronómetro visible durante la rutina. Al marcar el último ejercicio aparece una felicitación con la duración. Ver resumen permite volver a abrirla; no dice que la sesión esté guardada antes de confirmarlo.
+- Al llegar a cero, el descanso emite una alarma de tres tonos cada 1,3 segundos hasta tocar Detener o desactivar el sonido. También se detiene al iniciar otro descanso, finalizar la rutina o salir de la pantalla. Se conserva la limitación de sonido en segundo plano/pantalla bloqueada.
+- Sin SQL nuevo. Se mantiene el SQL 06 de duración y su historial.

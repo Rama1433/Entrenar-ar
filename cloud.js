@@ -95,7 +95,7 @@
  async function enter(session){
   const remembered=window.history.state?.entrenarNavigation?.view;
   const g=++generation;checking=true;busy=false;invitation=null;state=blank();user=session.user;myRole=null;live=false;
-  stopTimer();stopWorkoutClock();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
+  stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;accessPanel('Entrando a tu espacio…','Estamos cargando tu cuenta.');
   try{
    const result=await client.auth.getUser();const verified=check(result)?.user;if(!verified||g!==generation)return;
    user=verified;myRole=await rpc('ent_my_role');if(g!==generation)return;
@@ -126,7 +126,7 @@
  async function logout(){
   if(user?.id)sessionStorage.removeItem(draftStorageKey(user.id));
   ++generation;live=false;checking=true;busy=false;user=null;myRole=null;personal=null;subscription=null;memberships=[];pendingCode='';invitation=null;recovery=false;
-  stopTimer();stopWorkoutClock();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
+  stopTimer();if(modal.open)modal.close();$('#modal-body').replaceChildren();delete window.pendingBroadcast;state=blank();main.replaceChildren();$('#sidebar').replaceChildren();$('#topbar').replaceChildren();$('#mobile-nav').replaceChildren();
   sessionStorage.removeItem('entrenar-demo-navigation');document.body.classList.remove('cloud-live','app-opening');
   try{check(await client.auth.signOut({scope:'local'}));}catch{localStorage.removeItem('entrenar-auth-v1');}
   state=localDemo();upgradeState();role='coach';page='Inicio';detailId=null;studentId=state.students[0]?.id||'';checking=false;
@@ -164,11 +164,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.11 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.9.12 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.11</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.9.12</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tus medidas son opcionales y personales. Solo vos podés verlas.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -297,7 +297,7 @@
   if(['admin-payment-form','admin-message-form','broadcast-form'].includes(f.id))return;
   e.preventDefault();e.stopImmediatePropagation();submitLive(f).then(result=>{if(result===null)toast('Esta operación no está disponible para tu cuenta.');}).catch(err=>toast(friendly(err)));
  },true);
- function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();stopWorkoutClock();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
+ function showRecovery(){recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
  client.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){recovery=true;++generation;setTimeout(showRecovery,0);return;}
   if(event==='SIGNED_OUT'&&user){setTimeout(logout,0);return;}
