@@ -275,6 +275,7 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @keyframes rest-alarm-pulse{from{transform:scale(.94)}to{transform:scale(1.06)}}
 @media(prefers-reduced-motion:reduce){.rest-alarming .rest-clock{animation:none}}
 
+.history-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:16px}.history-pagination .btn{min-height:44px}
 .cloud-live .demo-strip {
   display: none;
 }
