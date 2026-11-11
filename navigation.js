@@ -44,7 +44,7 @@
   else{
    window.EntrenarAccessNavigation?.hide();
    role=['coach','student','admin'].includes(v.role)?v.role:'coach';
-   const allowed={coach:['Inicio','Alumnos','Rutinas','Ejercicios','Perfil','Notificaciones','Mi plan','Avisos'],student:['Inicio','Mi rutina','Progreso','Perfil','Avisos'],admin:['Resumen','Profesores','Facturación','Planes','Catálogo','Comunicados','Ajustes']};
+   const allowed={coach:['Inicio','Alumnos','Rutinas','Ejercicios','Gestión','Cuotas y cobros','Planificación','Seguimiento','Perfil','Notificaciones','Mi plan','Avisos'],student:['Inicio','Mi rutina','Progreso','Perfil','Avisos'],admin:['Resumen','Profesores','Facturación','Planes','Catálogo','Comunicados','Ajustes']};
    page=allowed[role].includes(v.page)?v.page:(role==='admin'?'Resumen':'Inicio');
    detailId=typeof v.detailId==='string'?v.detailId:null;
    studentId=state.students.some(s=>s.id===v.studentId)?v.studentId:(state.students[0]?.id||'');

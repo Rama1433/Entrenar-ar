@@ -1,6 +1,6 @@
-# Entrenar · V1.9.21 · Supabase
+# Entrenar · V1.10.0 · Supabase
 
-**Antes de publicar V1.9.21:** ejecutá `setup/Entrenar_11_Telefonos_y_Actualizacion.sql` en Supabase → SQL Editor, con el SQL 10 ya aplicado. Luego subí todos los archivos actualizados a GitHub. No se reescriben contactos ni datos históricos.
+**Antes de publicar V1.10.0:** ejecutá `setup/Entrenar_12_Plan_Profesional.sql` en Supabase → SQL Editor, con el SQL 11 ya aplicado. Luego subí todos los archivos del ZIP a GitHub. Conserva los datos y cobros existentes.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -13,7 +13,7 @@ PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el di
    - Si cambiás el dominio, actualizá ambas direcciones. No hace falta permitir todos los dominios de Vercel.
 3. En Authentication → Sign In / Providers → Email, mantené habilitado el acceso por email y la confirmación de correo. La contraseña mínima de la interfaz es de 10 caracteres; configurá también el mínimo en Supabase para que se aplique fuera de la interfaz.
 4. Reemplazá los archivos del repositorio GitHub por los de este ZIP. `index.html` debe quedar en la raíz. Vercel: Framework Other, sin build command, output `.`. `vercel.json` ya contiene esa configuración y las cabeceras de seguridad.
-5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.9.21.
+5. Esperá a que termine el despliegue. Cerrá y volvé a abrir Entrenar si la PWA tenía una versión anterior. Verificá V1.10.0.
 6. En **Ya tengo cuenta**, ingresá con el correo y contraseña del usuario administrador que creaste en Supabase. La app elige el rol desde la base; no hay selector de roles en las cuentas reales.
 
 La URL y la clave publishable están configuradas en `cloud.js`. Es una clave pública para el navegador; las restricciones las aplican Auth, RLS y las funciones de la base. No agregues contraseñas de base, claves secret ni service_role al repositorio. No expongas el esquema `ent_private` en Data API.
@@ -243,3 +243,28 @@ Validado localmente con interfaz y Supabase simulado, PostgreSQL con RLS y vista
 3. Verificar V1.9.21. Probar con dos sesiones diferentes: modificar el teléfono del profesor y comprobar su ficha en administrador; aprobar una vinculación y comprobar la vista del alumno, sin recargar.
 
 Validación local: PostgreSQL con RLS y triggers, cliente Supabase simulado y revisión visual PC/móvil. Los avisos WebSocket reales entre dispositivos deben comprobarse luego de ejecutar el SQL y desplegar; no se aplicó esta migración ni se publicó automáticamente la versión.
+
+
+## Cambios V1.10.0 · Planes y gestión Profesional
+
+- Inicial se muestra como **Base**, conserva su identificador `inicial`, cupo de 10 y todas las funciones previas. No altera pagos ni suscripciones existentes.
+- Profesional: 30 alumnos, cuotas y cobros, planificación de hasta 12 semanas, seguimiento de alumnos sin registros recientes, nombre y logo del equipo y exportación CSV para Excel.
+- Equipo figura como **Próximamente**, con prestaciones futuras de varios profesores, biblioteca compartida y panel general. No se ofrece para altas nuevas. Las suscripciones Equipo ya existentes se conservan; esta versión no incorpora varios profesores ni reservas de clases.
+- Se accede a **Gestión** desde el menú de PC o desde el perfil del profesor en celular; la barra móvil mantiene sus cuatro accesos.
+- Los cobros de alumnos están en tablas independientes de la facturación de Entrenar. Solo su profesor los puede leer: no se muestran a alumnos ni al administrador de la plataforma.
+- Configurar cuota define el precio de futuras cuotas. **Generar cuotas del mes** guarda importes y vencimientos sin modificar cuotas existentes, incluso si después cambia el precio. No genera cargos automáticos. Permite pagos parciales, anulación con motivo e historial, y recordatorios preparados para enviar manualmente por WhatsApp.
+- La planificación semanal referencia rutinas guardadas. Cada semana son 7 días desde el inicio; el alumno accede a las rutinas vigentes. Las asignaciones manuales no cambian. Guardar otra planificación del mismo alumno archiva la anterior y conserva su historial. Duplicar la selección de una semana no crea variantes nuevas de las rutinas: para ajustar cargas, duplicar y adaptar la rutina desde Rutinas.
+- Las alertas se basan en entrenamientos registrados, con un umbral de 7 días. No se presentan como comprobación de asistencia real. Las cuentas recién vinculadas no generan avisos durante su primera semana salvo que tengan una fecha previa de registro.
+- Logo opcional PNG/JPG/WebP de hasta 5 MB de entrada, reducido localmente a 128×128 y guardado como un único PNG pequeño por profesor; nombre del emprendimiento de hasta 80 caracteres. Se mantiene el logo de Entrenar.
+- Validación del plan y del equipo en las funciones SQL; escritura directa bloqueada con RLS. Si se baja a Base, los registros financieros propios siguen disponibles para consultar; no permite crear o modificar nuevos registros Profesional. Las planificaciones ya guardadas mantienen su comportamiento.
+- Las nuevas tablas usan las señales privadas de SQL 11. Los movimientos de cobros no notifican a alumnos ni al administrador. Los datos de cobros no se publican en Realtime.
+
+### Activar y probar
+
+1. Con SQL 11 aplicado, ejecutar completo `setup/Entrenar_12_Plan_Profesional.sql` en Supabase → SQL Editor.
+2. Subir todo el ZIP actualizado a GitHub y esperar el despliegue de Vercel. Reabrir la PWA y verificar V1.10.0.
+3. Como administrador, seleccionar un profesor → Editar plan y estado → Profesional y una vigencia válida. No realiza un cobro automático.
+4. Como profesor, abrir Perfil → Abrir herramientas. En Cuotas y cobros, configurar el importe de un alumno, generar sus cuotas del mes y registrar un pago recibido. En Planificación, elegir alumno, inicio y rutinas de cada semana.
+5. En demos, abrir Gestión y tocar Probar Profesional en demo: funciona con almacenamiento local aislado y sin escrituras en Supabase.
+
+Guía detallada en `PROFESIONAL.md`. Verificado localmente en PostgreSQL con RLS, cliente simulado y vistas PC/móvil; falta validar la migración y el recorrido real entre cuentas después del despliegue. No se aplicó SQL ni se desplegó remotamente desde este chat.
