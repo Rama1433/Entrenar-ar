@@ -314,6 +314,31 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 .exercise-muscle-modal .muscle-body{max-width:230px}
 @media(max-width:600px){.exercise-media-layout{grid-template-columns:minmax(0,1fr);gap:16px}.exercise-media-layout .exercise-video-stage{width:min(100%,300px,calc(55dvh * 9 / 16))}.muscle-panel{padding:18px}.muscle-panel .muscle-body{max-width:205px}.muscle-panel h3{font-size:18px}.muscle-legend{margin-bottom:12px}.muscle-choice span{padding:8px 10px}}
 
+/* Optional student sex choice, shared by registration, account completion and profile. */
+.sex-picker{border:0;min-width:0;padding:0;margin:20px 0 22px}
+.sex-picker legend{font-size:13px;font-weight:600;color:#21372c;padding:0;margin:0 0 11px}
+.sex-picker legend span{font-weight:400;color:#7a877b}
+.sex-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.sex-choice{position:relative;display:block!important;margin:0!important;cursor:pointer;min-width:0}
+.sex-choice input[type=radio]{position:absolute!important;opacity:0;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important}
+.sex-choice>span{display:flex;align-items:center;justify-content:center;gap:11px;position:relative;min-height:88px;border:1px solid #dfe5d9;border-radius:14px;background:#fff;color:#748174;transition:background .18s,border-color .18s,box-shadow .18s}
+.sex-choice svg{width:30px;height:38px;stroke:currentColor;fill:none;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sex-choice strong{font-size:14px;font-weight:600}
+.sex-choice i{display:none;position:absolute;top:8px;right:10px;font-style:normal;font-size:12px;font-weight:700}
+.sex-choice.female input:checked+span{background:#fcecf2;border-color:#e8abc1;color:#ad5879;box-shadow:0 0 0 1px #f0c9d8}
+.sex-choice.male input:checked+span{background:#eaf5fc;border-color:#9ecce5;color:#337da7;box-shadow:0 0 0 1px #c6e3f2}
+.sex-choice input:checked+span i{display:block}
+.sex-choice input:focus-visible+span{outline:3px solid #9bb775;outline-offset:3px}
+.sex-clear{display:block;margin:10px 0 0 auto;padding:8px 0 8px 12px;border:0;background:transparent;color:#788575;font-size:11px;cursor:pointer;text-decoration:underline;min-height:36px}
+.muscle-anatomy{display:flex;gap:6px;justify-content:center;max-width:280px;margin:0 auto 14px}
+.muscle-anatomy figure{margin:0;flex:1;min-width:0}
+.anatomical-body{display:block;width:100%;height:auto;max-height:320px}
+.anatomical-body path{stroke:#f7faf3;stroke-width:2.1;stroke-linejoin:round}
+.muscle-anatomy figcaption{text-align:center;font-size:10px;color:#718075;margin-top:7px}
+@media(max-width:600px){.sex-options{gap:10px}.sex-choice>span{gap:8px;min-height:82px}.sex-choice strong{font-size:13px}.sex-choice svg{width:27px;height:35px}.muscle-anatomy{max-width:248px}.anatomical-body{max-height:275px}}
+@media(prefers-reduced-motion:reduce){.sex-choice>span{transition:none}}
+
+.anatomical-body .anatomy-outline{fill:#e3e8df;stroke:#c9d3c4;stroke-width:2}
 .cloud-live .demo-strip {
   display: none;
 }

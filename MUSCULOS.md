@@ -15,7 +15,7 @@ Los grupos son una síntesis orientativa para una silueta esquemática, no una m
 - Puente de glúteos: NASM, Floor Bridge. https://www.nasm.org/resource-center/exercise-library/floor-bridge
 - Flexiones de brazos: NASM, Push-Up. https://www.nasm.org/resource-center/exercise-library/push-up
 
-La clasificación en los grupos simplificados de Entrenar es una adaptación editorial de estas referencias. El profesor debe revisarla si utiliza otra variante. Las siluetas SVG son originales de Entrenar; no se copiaron imágenes, videos ni texto de esas fuentes.
+La clasificación en los grupos simplificados de Entrenar es una adaptación editorial de estas referencias. El profesor debe revisarla si utiliza otra variante. La silueta neutra es original de Entrenar. Desde V1.9.17 las figuras masculina y femenina se adaptaron de react-native-body-highlighter, bajo licencia MIT incluida; ver FIGURAS.md. No se copiaron imágenes, videos ni texto de las referencias de ejercicios.
 
 ## Persistencia y seguridad
 
