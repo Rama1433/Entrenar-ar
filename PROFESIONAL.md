@@ -1,8 +1,8 @@
-# Entrenar Profesional · Guía V1.10.0
+# Entrenar Profesional · Guía V1.10.1
 
 ## Acceso
 
-En PC: menú Gestión. En celular: avatar → Perfil → Abrir herramientas.
+En PC y celular: Gestión en el menú principal. En celular también se conserva avatar → Perfil → Abrir herramientas.
 Requiere Profesional vigente. En demo se puede activar Probar Profesional sin crear cuentas ni modificar datos reales.
 
 ## Cuotas y cobros

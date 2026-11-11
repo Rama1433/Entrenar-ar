@@ -377,6 +377,7 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @media(max-width:700px){.pro-stats{grid-template-columns:minmax(0,1fr);gap:10px}.pro-stats .stat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);align-items:center;gap:5px 12px;padding:16px}.pro-stats .stat-top{grid-column:1;grid-row:1;font-size:12px}.pro-stats .stat-detail{grid-column:1;grid-row:2;font-size:10px}.pro-stats .stat-value{grid-column:2;grid-row:1 / span 2;margin:0;font-size:clamp(18px,5.8vw,23px);text-align:right;white-space:normal;overflow-wrap:anywhere;min-width:0}.pro-stats .stat-top svg{display:none}}
 .pro-payment-balance{padding:12px;border-radius:10px;background:#eef4e7;color:#294632;font-weight:600;overflow-wrap:anywhere;margin:8px 0 16px;font-size:14px}
 #modal form[id^=pro-] input[type=date],#modal form[id^=pro-] input[type=month]{appearance:none;-webkit-appearance:none;min-width:0;min-inline-size:0;max-width:100%;font-size:16px}#modal form[id^=pro-] input::-webkit-date-and-time-value{text-align:left;min-width:0}
+@media(max-width:700px){body[data-role=coach] #mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding-left:8px;padding-right:8px}body[data-role=coach] #mobile-nav button{min-width:0;min-height:54px;padding:4px 1px;font-size:10px;line-height:1.2}body[data-role=coach] #mobile-nav svg{width:20px;height:20px;flex-shrink:0}}
 .cloud-live .demo-strip {
   display: none;
 }

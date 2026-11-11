@@ -1,6 +1,6 @@
-# Entrenar · V1.10.0 · Supabase
+# Entrenar · V1.10.1 · Supabase
 
-**Antes de publicar V1.10.0:** ejecutá `setup/Entrenar_12_Plan_Profesional.sql` en Supabase → SQL Editor, con el SQL 11 ya aplicado. Luego subí todos los archivos del ZIP a GitHub. Conserva los datos y cobros existentes.
+**V1.10.1:** agrega Gestión a la barra inferior del profesor. Si ya aplicaste el SQL 12 de V1.10.0, no necesitás ejecutar ningún SQL nuevo: solo subir los archivos del ZIP a GitHub. Si todavía no lo aplicaste, sigue siendo necesario para guardar las herramientas Profesional.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -268,3 +268,8 @@ Validación local: PostgreSQL con RLS y triggers, cliente Supabase simulado y re
 5. En demos, abrir Gestión y tocar Probar Profesional en demo: funciona con almacenamiento local aislado y sin escrituras en Supabase.
 
 Guía detallada en `PROFESIONAL.md`. Verificado localmente en PostgreSQL con RLS, cliente simulado y vistas PC/móvil; falta validar la migración y el recorrido real entre cuentas después del despliegue. No se aplicó SQL ni se desplegó remotamente desde este chat.
+
+
+## Cambios V1.10.1
+
+Barra móvil del profesor: Inicio, Alumnos, Rutinas, Ejercicios y Gestión. Cinco columnas adaptadas al ancho disponible, con área táctil y safe area inferior. Gestión permanece marcado al navegar por Cuotas y cobros, Planificación y Seguimiento. El acceso desde el perfil también se conserva. Sin migraciones ni cambios de datos.
