@@ -1,6 +1,6 @@
-# Entrenar · V1.10.2 · Supabase
+# Entrenar · V1.12.0 · Supabase
 
-**V1.10.2:** ajustes de responsive y formato de importes. No requiere SQL nuevo si ya aplicaste el SQL 12; solo subir todos los archivos del ZIP a GitHub y reabrir la PWA.
+**V1.12.0:** videos propios de hasta siete segundos por ejercicio, privados y en loop; edad, peso y altura opcionales en el registro y perfil del alumno. Requiere SQL 14 y función exercise-media. Ver `VIDEOS_Y_PERFIL.md`. El SQL 13 y rest-reminders de avisos de descanso siguen siendo independientes. No se aplicaron migraciones ni funciones en el proyecto remoto desde el chat.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -283,3 +283,15 @@ Barra móvil del profesor: Inicio, Alumnos, Rutinas, Ejercicios y Gestión. Cinc
 - Edición con cursor, selección, retroceso y Delete; se preservan los centavos. En los formularios existentes, los importes también aparecen formateados al abrirlos.
 - Los cálculos siguen usando centavos enteros y los mismos límites de importe. No cambia cuotas generadas, registros de pagos, suscripciones, exportación CSV ni datos históricos. No afecta peso, altura, cargas, repeticiones ni teléfonos.
 - Validado localmente con los cuatro formularios monetarios (precio de plan, pago a Entrenar, cuota de alumno y pago de alumno), los valores enviados por RPC y revisión móvil a 320/390 píxeles. La comprobación visual se realizó en Chromium; conviene repetir el recorrido del video en el iPhone real luego del despliegue.
+
+
+## Cambios V1.11.0
+
+Ver `AVISOS_DESCANSO.md`: Wake Lock opcional, suscripción Web Push por alumno/dispositivo, programación segura en servidor, cancelación al detener/terminar/salir y envío por Cron + Edge Function. La campana original se conserva. La notificación externa puede demorar y su sonido depende del celular. En iPhone se debe abrir la PWA instalada y aceptar las notificaciones. SQL y función incluidos; no desplegados remotamente.
+
+
+## Cambios V1.12.0
+
+Demostración propia por ejercicio con cámara de siete segundos, vista previa, galería limitada, subida al guardar y reproducción en loop sin sonido. Bucket privado con acceso por profesor y asignación del alumno, inspección real del archivo en servidor y límites de almacenamiento. Se conserva YouTube Shorts.
+
+Edad, peso y altura opcionales en alta, confirmación y perfil del alumno. Los cambios de medidas alimentan Mi progreso, sin duplicar la fecha ni compartir el historial con el profesor o administrador. Ver guía `VIDEOS_Y_PERFIL.md` para límites, seguridad, consumo y activación.
