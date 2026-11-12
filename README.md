@@ -1,6 +1,6 @@
-# Entrenar · V1.12.0 · Supabase
+# Entrenar · V1.12.1 · Supabase
 
-**V1.12.0:** videos propios de hasta siete segundos por ejercicio, privados y en loop; edad, peso y altura opcionales en el registro y perfil del alumno. Requiere SQL 14 y función exercise-media. Ver `VIDEOS_Y_PERFIL.md`. El SQL 13 y rest-reminders de avisos de descanso siguen siendo independientes. No se aplicaron migraciones ni funciones en el proyecto remoto desde el chat.
+**V1.12.1:** selección de galería con errores claros y bloqueo de archivos rechazados; videos propios de hasta siete segundos por ejercicio, privados y en loop; edad, peso y altura opcionales en el registro y perfil del alumno. Requiere SQL 14 y función exercise-media. Ver `VIDEOS_Y_PERFIL.md`. El SQL 13 y rest-reminders de avisos de descanso siguen siendo independientes. No se aplicaron migraciones ni funciones en el proyecto remoto desde el chat.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -295,3 +295,8 @@ Ver `AVISOS_DESCANSO.md`: Wake Lock opcional, suscripción Web Push por alumno/d
 Demostración propia por ejercicio con cámara de siete segundos, vista previa, galería limitada, subida al guardar y reproducción en loop sin sonido. Bucket privado con acceso por profesor y asignación del alumno, inspección real del archivo en servidor y límites de almacenamiento. Se conserva YouTube Shorts.
 
 Edad, peso y altura opcionales en alta, confirmación y perfil del alumno. Los cambios de medidas alimentan Mi progreso, sin duplicar la fecha ni compartir el historial con el profesor o administrador. Ver guía `VIDEOS_Y_PERFIL.md` para límites, seguridad, consumo y activación.
+
+
+## Cambios V1.12.1
+
+Selección de videos: errores visibles junto al archivo y bloqueo del guardado mientras haya una selección inválida. Botón Descartar selección para continuar sin un nuevo video, conservando la demostración ya guardada. Un archivo válido muestra duración y tamaño. Una validación anterior no puede reemplazar el resultado de una selección más reciente. No cambia SQL 14 ni la función exercise-media; basta actualizar los archivos de la app.

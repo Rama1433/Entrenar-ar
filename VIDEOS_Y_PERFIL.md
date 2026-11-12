@@ -1,4 +1,4 @@
-# Videos propios y datos opcionales del alumno · V1.12.0
+# Videos propios y datos opcionales del alumno · V1.12.1
 
 Esta entrega incorpora una demostración propia por ejercicio del profesor y edad, peso y altura opcionales en el registro y perfil del alumno. El código está preparado y probado localmente; no se modificó la base real ni se desplegó la función desde el chat.
 
@@ -7,7 +7,7 @@ Esta entrega incorpora una demostración propia por ejercicio del profesor y eda
 1. Con SQL 12 ya aplicado, abrí **Supabase → SQL Editor → New query** y ejecutá todo el contenido de `setup/Entrenar_14_Videos_y_Datos_Alumno.sql`. Copiá el archivo `.sql`, no este documento. El SQL crea el bucket privado y los permisos automáticamente. SQL 13 de avisos es independiente; no hace falta para estas funciones.
 2. Abrí **Supabase → Edge Functions → Deploy a new function → Via Editor**. El nombre debe ser exactamente **exercise-media**. Reemplazá el ejemplo de `index.ts` por el contenido completo de `setup/exercise-media/index.ts` y desplegalo.
 3. En la configuración de **esa función**, desactivá **Verify JWT / Enforce JWT verification**. El código valida explícitamente la sesión con `auth.getUser`, verifica el rol de profesor y vuelve a comprobar el plan y el ejercicio en las funciones de la base. No cambies la configuración de otras funciones.
-4. Subí los archivos actualizados del ZIP al GitHub de Entrenar, esperá el despliegue de Vercel y cerrá/reabrí la PWA. El pie debe mostrar **V1.12.0**.
+4. Subí los archivos actualizados del ZIP al GitHub de Entrenar, esperá el despliegue de Vercel y cerrá/reabrí la PWA. El pie debe mostrar **V1.12.1**.
 
 No se agregan claves a Vercel ni a GitHub. La función usa las variables de servidor predeterminadas de Supabase. Nunca copies `service_role` en código del navegador. El origen permitido es el dominio actual `https://entrenar-ar.vercel.app`; si cambiás de dominio también hay que ajustar `ORIGIN` en la función.
 
@@ -78,3 +78,10 @@ Referencias:
 - https://supabase.com/docs/guides/storage/security/access-control
 - https://mediainfo.js.org/docs/getting-started/usage/
 - https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
+
+
+## Aclaración de galería y límite
+
+Elegir un archivo no lo sube automáticamente: se valida, muestra vista previa y se confirma con Guardar ejercicio. Los archivos de galería que superan el límite se rechazan; no se recortan a siete segundos. Desde V1.12.1 el error se resalta y el ejercicio no se puede guardar mientras esa selección sea inválida. Se puede elegir otro video o Descartar selección; descartar conserva el video ya guardado, si existía. Si no existía, permite guardar solo el ejercicio sin video.
+
+El teléfono comprueba duración, tamaño y resolución, y el servidor vuelve a inspeccionar el archivo real. La grabación propia se detiene automáticamente alrededor de los siete segundos; se conserva el margen técnico de cierre de archivo explicado arriba. La duración y tamaño del archivo aceptado se muestran antes de guardar.
