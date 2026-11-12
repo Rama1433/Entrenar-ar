@@ -1,6 +1,6 @@
-# Entrenar · V1.12.1 · Supabase
+# Entrenar · V1.13.0 · Supabase
 
-**V1.12.1:** selección de galería con errores claros y bloqueo de archivos rechazados; videos propios de hasta siete segundos por ejercicio, privados y en loop; edad, peso y altura opcionales en el registro y perfil del alumno. Requiere SQL 14 y función exercise-media. Ver `VIDEOS_Y_PERFIL.md`. El SQL 13 y rest-reminders de avisos de descanso siguen siendo independientes. No se aplicaron migraciones ni funciones en el proyecto remoto desde el chat.
+**V1.13.0:** ficha del profesor con edad, sexo, último peso y altura del alumno y sus fechas; creación/edición de ejercicios en tres pasos con selección muscular en la figura. Requiere SQL 15 después del 14. No cambia la función exercise-media. Guía: `FICHA_Y_EJERCICIOS.md`. No se aplicó la migración remota desde el chat.
 
 PWA para PC, Android e iPhone. Sitio estático, sin compilación. Conserva el diseño aprobado e incorpora acceso real, datos en Supabase y demos independientes.
 
@@ -300,3 +300,8 @@ Edad, peso y altura opcionales en alta, confirmación y perfil del alumno. Los c
 ## Cambios V1.12.1
 
 Selección de videos: errores visibles junto al archivo y bloqueo del guardado mientras haya una selección inválida. Botón Descartar selección para continuar sin un nuevo video, conservando la demostración ya guardada. Un archivo válido muestra duración y tamaño. Una validación anterior no puede reemplazar el resultado de una selección más reciente. No cambia SQL 14 ni la función exercise-media; basta actualizar los archivos de la app.
+
+
+## Cambios V1.13.0
+
+Ficha del alumno: resumen actual de edad, sexo, peso y altura para su profesor activo, con fechas por medida, consulta restringida y señales de actualización privadas. Creación/edición de ejercicios: Datos → Músculos → Video e indicaciones, figura interactiva, regreso entre etapas sin pérdida de datos y guardado final único. Requiere SQL 15; ver `FICHA_Y_EJERCICIOS.md`.

@@ -98,5 +98,5 @@
  modal.addEventListener('close',()=>{if(!modal.open){const form=modal.querySelector('#exercise-form');if(form)releasePreview(form);stop();}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden){if(stream){stopCapture();const form=document.querySelector('#exercise-form');if(form){options(form).recording=false;note(form,'La cámara se cerró al salir de la app. Volvé a grabar cuando estés listo.');}}playing?.video.pause();}else if(playing&&!playing.paused)playing.video.play().catch(()=>{});});
  window.addEventListener('entrenar:account-changed',()=>{stop();locals.clear();capabilities=null;});
- window.EntrenarExerciseMedia={stop,play,afterSave,afterDemoSave,validateForm,hasLocal:exercise=>locals.has(exercise)};
+ window.EntrenarExerciseMedia={pauseEditor(form){const hadStream=!!stream;stopCapture();const data=options(form);data.recording=false;form.querySelector('[data-clip-preview]')?.pause();if(hadStream){form.querySelector('[data-clip-preview]').srcObject=null;form.querySelector('.clip-preview').hidden=true;note(form,'Cámara cerrada. Podés volver a grabar desde este paso.');}},stop,play,afterSave,afterDemoSave,validateForm,hasLocal:exercise=>locals.has(exercise)};
 })();
