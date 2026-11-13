@@ -121,12 +121,15 @@
    let professional=null;
    if(kind!=='admin')try{const tables=kind==='coach'?['ent_student_fees','ent_fee_charges','ent_fee_payments','ent_fee_voids','ent_training_blocks','ent_coach_branding']:['ent_training_blocks','ent_coach_branding'];professional=Object.fromEntries(await Promise.all(tables.map(async table=>[table,await all(table,table==='ent_student_fees'||table==='ent_coach_branding'?'coach_id':'id')])));}catch(error){if(!/42P01|PGRST205|schema cache|does not exist/i.test((error.code||'')+' '+error.message))throw error;}
    let coachSnapshot=null;if(kind==='coach')try{coachSnapshot=await rpc('ent_coach_student_snapshot')||[];}catch(error){if(!/42P01|PGRST202|schema cache|does not exist/i.test((error.code||'')+' '+error.message))throw error;}
+   let paymentOrders=null,paymentAvailable=false;
+   if(kind==='admin'||kind==='coach')try{paymentOrders=await all('ent_mp_orders','created_at');if(kind==='coach')paymentAvailable=!!await rpc('ent_mp_available');}catch(error){if(!/42P01|PGRST20[25]|schema cache|does not exist/i.test((error.code||'')+' '+error.message))throw error;}
    const t=Object.fromEntries(pairs);t.counts=kind==='admin'?await rpc('ent_admin_coach_counts'):[];
    if(g!==generation||uid!==user?.id||!live)return;
    if(automatic&&automaticBlocked()){syncPending=true;return;}
    const next=mapData(t,kind,uid);next.coachSnapshotReady=coachSnapshot!==null;if(kind==='coach')for(const student of next.students){const row=coachSnapshot?.find(x=>x.student_id===student.id);student.sharedSnapshot=row?{age:row.age_years,sex:normalizeSex(row.sex_code),weight:row.weight_kg==null?null:Number(row.weight_kg),height:row.height_cm==null?null:Number(row.height_cm),weightOn:row.weight_on,heightOn:row.height_on}:null;}next.drafts=state.drafts||{};next.readStudentNotices=state.readStudentNotices||{};
    next.catalogReady=platform!==null;next.catalogExercises=(platform?.[0]||[]).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes,primaryMuscles:e.primary_muscles,secondaryMuscles:e.secondary_muscles,status:e.status}));next.catalogRoutines=platform?.[1]||[];
    next.professional={ready:professional!==null,fees:professional?.ent_student_fees||[],charges:professional?.ent_fee_charges||[],payments:professional?.ent_fee_payments||[],voids:professional?.ent_fee_voids||[],blocks:professional?.ent_training_blocks||[],branding:professional?.ent_coach_branding?.find(b=>b.coach_id===(kind==='coach'?uid:next.coach.id))||null};
+   next.payments={ready:paymentOrders!==null,available:paymentAvailable,orders:paymentOrders||[]};
    state=next;syncPlatformCatalog(platform?next.catalogExercises:null,next.catalogRoutines);memberships=t.ent_memberships;subscription=t.ent_subscriptions.find(s=>s.coach_id===uid)||null;personal=t.ent_profiles.find(p=>p.id===uid)||null;
    // Auth is the source of the current email, including confirmed email changes.
    if(kind==='coach')state.coach.email=user.email||state.coach.email;
@@ -229,11 +232,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.13.0 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.14.0 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.13.0</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.14.0</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tu historial de medidas es personal. Tu profesor vinculado puede ver tu último peso y altura.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -295,7 +298,7 @@
  async function submitLive(f){
   const data=new FormData(f),v=n=>String(data.get(n)||'').trim(),fid=f.dataset.id;
   if(f.id.startsWith('pro-'))return;
-  if(['admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return false; // These only open a review; confirmation uses the remote operation.
+  if(['mp-test-form','admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return false; // These only open a review; confirmation uses the remote operation.
   const known=['admin-price-form','cloud-subscription','cloud-profile','cloud-email','cloud-link','cloud-link-confirm','cloud-member','exercise-form','routine-form','assign-form','measurement-form'];
   if(!known.includes(f.id))return null;
   if(f.id==='exercise-form'&&window.EntrenarExerciseWizard?.beforeSubmit(f)===false)return true;
@@ -320,6 +323,14 @@
   if(data?.error)throw Error(data.error);if(!data?.ok)throw Error('El servidor no confirmó la carga del video. Volvé a intentar.');
  }
  const api={
+  get subscription(){return subscription?{...subscription}:null;},
+  async mercadoPago(body){
+   if(!live||!['admin','coach'].includes(myRole))throw Error('Ingresá con tu cuenta');
+   const owner=user.id,{data,error}=await client.functions.invoke('mercadopago-checkout',{body});
+   if(user?.id!==owner||!live)throw Error('La sesión cambió');
+   if(error){let message='No pudimos conectar el pago. Revisá el SQL 16 y la función mercadopago-checkout.';try{const payload=await error.context?.json();if(payload?.error)message=payload.error;}catch{}throw Error(message);}
+   if(data?.error)throw Error(data.error);if(!data?.id)throw Error('El servidor no confirmó la orden');return data;
+  },
   videoCapabilities(){needRole('coach');return rpc('ent_video_capabilities');},
   async uploadExerciseVideo(exercise,blob){needRole('coach');const form=new FormData();form.set('exercise',exercise);form.set('action','upload');form.set('file',blob,blob.type==='video/webm'?'demo.webm':blob.type==='video/quicktime'?'demo.mov':'demo.mp4');await invokeMedia(form);},
   async removeExerciseVideo(exercise){needRole('coach');const form=new FormData();form.set('exercise',exercise);form.set('action','remove');await invokeMedia(form);},
@@ -376,7 +387,7 @@
   }
   if(!live)return;
   if(f.id.startsWith('pro-'))return;
-  if(['admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return;
+  if(['mp-test-form','admin-payment-form','admin-message-form','broadcast-form','catalog-exercise-form','catalog-routine-form'].includes(f.id))return;
   e.preventDefault();e.stopImmediatePropagation();submitLive(f).then(result=>{if(result===null)toast('Esta operación no está disponible para tu cuenta.');}).catch(err=>toast(friendly(err)));
  },true);
  function showRecovery(){stopSync();syncPending=false;recovery=true;checking=false;live=false;state=blank();stopTimer();if(modal.open)modal.close();main.replaceChildren();accessPanel('Elegí tu nueva contraseña','Después vas a poder volver a tu espacio.',`<form id="cloud-password"><label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Repetir contraseña<input name="repeat" type="password" autocomplete="new-password" minlength="10" required></label><button type="submit" class="access-btn">Guardar contraseña</button></form><button class="access-text" data-cloud="logout">Salir</button>`);}
