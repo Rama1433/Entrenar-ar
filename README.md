@@ -1,4 +1,6 @@
-# Entrenar · V1.15.0 · Supabase
+# Entrenar · V1.15.1 · Supabase
+
+**V1.15.1:** flotante sutil «Mensaje nuevo» que desaparece en 4 segundos y no vuelve a anunciar mensajes vistos en la sesión.
 
 **V1.15.0:** aviso en Inicio desde 7 días antes del vencimiento, campanita con contador y mensajes del profesor que caducan a las 24 horas. SQL 17 incorpora la limpieza automática (ya aplicada al proyecto conectado). Publicar los archivos de este ZIP en GitHub; no requiere cambiar las funciones de Mercado Pago. Detalles en AVISOS.md.
 

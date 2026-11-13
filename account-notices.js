@@ -2,6 +2,35 @@
 // Avisos temporales y recordatorios de renovación. Nunca inicia un cobro.
 (()=>{
  const DAY=86400000;
+ const seenByAccount=new Map();let floatingTimer;
+ function dismissFloating(){clearTimeout(floatingTimer);document.getElementById('message-floating')?.remove();}
+ function floatingNotice(){
+  if(document.hidden||document.body.classList.contains('access-open')||!['student','coach'].includes(role))return dismissFloating();
+  const cloud=window.EntrenarCloud;
+  const key='entrenar-notice-shown:'+ (cloud?.live?cloud.accountId:'demo')+':'+role+':'+(role==='student'?studentId:'');
+  let seen=seenByAccount.get(key);
+  if(!seen){try{const saved=JSON.parse(sessionStorage.getItem(key)||'[]');seen=new Set(Array.isArray(saved)?saved.filter(id=>typeof id==='string'):[]);}catch{seen=new Set();}seenByAccount.set(key,seen);}
+  const notices=role==='student'?state.notices:coachInboxNotices();
+  const readIds=role==='student'?(state.readStudentNotices[studentId]||[]):state.readCoachNotices;
+  const inbox=role==='student'?'Avisos':'Notificaciones';
+  const unread=notices.filter(n=>!readIds.includes(n.id));
+  const fresh=unread.filter(n=>!seen.has(n.id));
+  const active=new Set(notices.map(n=>n.id));
+  for(const id of seen)if(!active.has(id))seen.delete(id);
+  for(const id of readIds)if(active.has(id))seen.add(id);
+  if(page===inbox||!unread.length)dismissFloating();
+  if(fresh.length){
+   for(const n of fresh)seen.add(n.id);
+   if(page!==inbox){
+    dismissFloating();
+    const el=document.createElement('div');el.id='message-floating';el.className='message-floating';el.setAttribute('role','status');
+    el.innerHTML=`<button type="button" data-page="${inbox}" aria-label="Mensaje nuevo. Ver mensajes">${icon('bell')}<span>Mensaje nuevo</span></button>`;
+    document.body.append(el);
+    floatingTimer=setTimeout(dismissFloating,4000);
+   }
+  }
+  try{sessionStorage.setItem(key,JSON.stringify([...seen]));}catch{}
+ }
  function expire(){
   const before=state.notices.length,now=Date.now();
   state.notices=state.notices.filter(n=>{
@@ -27,19 +56,19 @@
     main.insertAdjacentHTML('afterbegin',`<section id="account-expiry" class="account-alert expiry-alert" role="status"><div><strong>${title}</strong><p>Vencimiento: ${esc(dateLabel(sub.ends_on))}. Renovás cuando vos decidas, sin débito automático.</p></div><button type="button" class="btn primary" data-page="Perfil">Renovar mi plan</button></section>`);
    }
   }
-  const unread=role==='student'?state.notices.filter(n=>!(state.readStudentNotices[studentId]||[]).includes(n.id)):role==='coach'?coachInboxNotices().filter(n=>!state.readCoachNotices.includes(n.id)):[];
-  if(unread.length)main.insertAdjacentHTML('afterbegin',`<section id="inbox-alert" class="account-alert inbox-alert" role="status"><span class="inbox-alert-icon">${icon('bell')}</span><div><strong>${unread.length===1?'Tenés un mensaje nuevo':'Tenés '+unread.length+' mensajes nuevos'}</strong><p>${role==='student'?'Tu profesor te dejó novedades. Los avisos están disponibles durante 24 horas.':'El equipo de Entrenar te dejó novedades.'}</p></div><button type="button" class="btn primary" data-page="${role==='student'?'Avisos':'Notificaciones'}">Ver mensajes</button></section>`);
+
  }
  const chrome=renderChrome;
  renderChrome=function(...args){expire();return chrome(...args);};
  const prior=render;
- render=function(...args){expire();const result=prior(...args);banners();return result;};
+ render=function(...args){expire();const result=prior(...args);banners();floatingNotice();return result;};
  function tick(){
   const changed=expire();
   if(changed){if(role==='student'&&page==='Avisos')renderNotices();else renderChrome();}
-  banners();
+  banners();floatingNotice();
  }
  setInterval(tick,30000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
- expire();renderChrome();banners();
+ window.addEventListener('entrenar:account-changed',dismissFloating);
+ expire();renderChrome();banners();floatingNotice();
 })();

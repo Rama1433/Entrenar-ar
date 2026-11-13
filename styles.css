@@ -404,10 +404,17 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 .account-alert strong {font-size:17px;line-height:1.4}
 .account-alert p {margin:5px 0 0;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
 .account-alert .btn {flex-shrink:0}
-.inbox-alert-icon {display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;background:white;border-radius:50%}
-.inbox-alert-icon svg {width:24px;height:24px}
 .expiry-alert {background:#fff8e8;border-color:#e5ce96}
 @media(max-width:600px){.account-alert {flex-wrap:wrap;padding:17px;gap:12px}.account-alert .btn {width:100%}.account-alert strong {font-size:16px}.account-alert p {font-size:13px}}
+
+/* Aviso flotante breve; no desplaza el contenido. */
+.message-floating {position:fixed;z-index:80;top:calc(env(safe-area-inset-top,0px) + 86px);right:22px;max-width:calc(100vw - 32px);border:1px solid #dce4d5;border-radius:24px;background:#fbfcf8;box-shadow:0 4px 16px #173b2b14;color:#35513e;animation:message-in .2s ease-out}
+.message-floating button {display:flex;align-items:center;gap:8px;padding:10px 15px;border:0;border-radius:inherit;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.message-floating svg {width:17px;height:17px;flex-shrink:0}
+.message-floating button:focus-visible {outline:2px solid #87ab57;outline-offset:3px}
+@keyframes message-in {from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.message-floating {right:16px;top:calc(env(safe-area-inset-top,0px) + 82px)}}
+@media(prefers-reduced-motion:reduce){.message-floating {animation:none}}
 
 .cloud-live .demo-strip {
   display: none;
