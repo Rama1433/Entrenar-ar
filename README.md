@@ -1,4 +1,6 @@
-# Entrenar · V1.16.0 · Supabase
+# Entrenar · V1.16.1 · Supabase
+
+**V1.16.1:** guardado/edición con indicador enlazado al formulario; lectura y anuncio de mensajes del alumno persistentes en Supabase (SQL 18 ya aplicado al proyecto conectado). Publicar este ZIP para completar la corrección.
 
 **V1.16.0:** botones con texto y spinner durante operaciones asíncronas, restauración tras errores y consultas independientes en paralelo para reducir las esperas. Solo actualizar archivos en GitHub, sin SQL nuevo.
 

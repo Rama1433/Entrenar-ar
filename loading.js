@@ -3,7 +3,7 @@
 (()=>{
  let trigger=null;
  const active=new Map();
- function remember(button){trigger=button;queueMicrotask(()=>{if(trigger===button)trigger=null;});}
+ function remember(button){trigger=button;setTimeout(()=>{if(trigger===button)trigger=null;},0);}
  window.addEventListener('click',event=>{
   const button=event.target.closest('button');
   if(button&&active.has(button)){event.preventDefault();event.stopImmediatePropagation();return;}

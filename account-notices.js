@@ -2,7 +2,7 @@
 // Avisos temporales y recordatorios de renovación. Nunca inicia un cobro.
 (()=>{
  const DAY=86400000;
- const seenByAccount=new Map();let floatingTimer;
+ const seenByAccount=new Map(),receiptPending=new Set();let floatingTimer;
  function dismissFloating(){clearTimeout(floatingTimer);document.getElementById('message-floating')?.remove();}
  function floatingNotice(){
   if(document.hidden||document.body.classList.contains('access-open')||!['student','coach'].includes(role))return dismissFloating();
@@ -13,6 +13,12 @@
   const notices=role==='student'?state.notices:coachInboxNotices();
   const readIds=role==='student'?(state.readStudentNotices[studentId]||[]):state.readCoachNotices;
   const inbox=role==='student'?'Avisos':'Notificaciones';
+  const receipts=role==='student'&&cloud?.live?(state.noticeReceipts||[]):[];
+  for(const r of receipts)if(r.seen_at)seen.add(r.notice_id);
+  if(role==='student'&&cloud?.live){
+   const reads=notices.filter(n=>readIds.includes(n.id)&&!receipts.some(r=>r.notice_id===n.id&&r.read_at)).map(n=>n.id);
+   persist(reads,true,cloud,key);
+  }
   const unread=notices.filter(n=>!readIds.includes(n.id));
   const fresh=unread.filter(n=>!seen.has(n.id));
   const active=new Set(notices.map(n=>n.id));
@@ -21,6 +27,7 @@
   if(page===inbox||!unread.length)dismissFloating();
   if(fresh.length){
    for(const n of fresh)seen.add(n.id);
+   if(role==='student'&&cloud?.live)persist(fresh.map(n=>n.id),false,cloud,key);
    if(page!==inbox){
     dismissFloating();
     const el=document.createElement('div');el.id='message-floating';el.className='message-floating';el.setAttribute('role','status');
@@ -30,6 +37,11 @@
    }
   }
   try{sessionStorage.setItem(key,JSON.stringify([...seen]));}catch{}
+ }
+ function persist(ids,read,cloud,key){
+  const selected=ids.filter(id=>!receiptPending.has(key+':'+id+':'+read));if(!selected.length)return;
+  const tags=selected.map(id=>key+':'+id+':'+read);for(const tag of tags)receiptPending.add(tag);
+  cloud.markStudentNotices?.(selected,read).catch(()=>{}).finally(()=>{for(const tag of tags)receiptPending.delete(tag);});
  }
  function expire(){
   const before=state.notices.length,now=Date.now();

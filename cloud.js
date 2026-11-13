@@ -3,7 +3,7 @@
 (() => {
  const client=window.EntrenarSupabaseSDK.createClient('https://tsmgmsiigkdhrwwkbpyj.supabase.co','sb_publishable_6ZuSWOnM8cATkxHzpjPD6A_93M4Iyzc',{
   auth:{storageKey:'entrenar-auth-v1',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
-  global:{fetch:(url,options)=>fetch(url,{...options,cache:'no-store'})}
+  global:{fetch:(url,options)=>fetch(url,{...options,cache:'no-store',...(String(url).includes('/rpc/ent_mark_student_notices')?{keepalive:true}:{})})}
  });
  let user=null,live=false,checking=true,started=false,authBusy=false,busy=false,recovery=false,generation=0;
  let myRole=null,subscription=null,memberships=[],pendingCode='',invitation=null;
@@ -114,12 +114,12 @@
   refreshTask=(async()=>{
    const names=['ent_profiles','ent_plans','ent_memberships','ent_coaches','ent_subscriptions','ent_payments','ent_announcements','ent_announcement_recipients'];
    if(kind!=='admin')names.push('ent_exercises','ent_routines','ent_routine_exercises','ent_assignments','ent_sessions','ent_student_notices');
-   if(kind==='student')names.push('ent_measurements');
+   if(kind==='student')names.push('ent_measurements','ent_student_notice_receipts');
    // Todas estas lecturas son independientes: una sola espera de red.
    const optional=async(task)=>{try{return await task();}catch(error){if(/42P01|PGRST20[25]|schema cache|does not exist/i.test((error.code||'')+' '+error.message))return null;throw error;}};
    const professionalTables=kind==='coach'?['ent_student_fees','ent_fee_charges','ent_fee_payments','ent_fee_voids','ent_training_blocks','ent_coach_branding']:['ent_training_blocks','ent_coach_branding'];
    const [pairs,platform,professional,coachSnapshot,paymentData,counts]=await Promise.all([
-    Promise.all(names.map(async n=>[n,await all(n,n==='ent_coaches'?'user_id':n==='ent_subscriptions'?'coach_id':n==='ent_announcement_recipients'?'announcement_id':'id')])),
+    Promise.all(names.map(async n=>[n,await all(n,n==='ent_coaches'?'user_id':n==='ent_subscriptions'?'coach_id':n==='ent_announcement_recipients'?'announcement_id':n==='ent_student_notice_receipts'?'notice_id':'id')])),
     kind==='admin'||kind==='coach'?optional(()=>Promise.all([all('ent_catalog_exercises'),all('ent_catalog_routines')])):null,
     kind!=='admin'?optional(async()=>Object.fromEntries(await Promise.all(professionalTables.map(async table=>[table,await all(table,table==='ent_student_fees'||table==='ent_coach_branding'?'coach_id':'id')])))):null,
     kind==='coach'?optional(async()=>await rpc('ent_coach_student_snapshot')||[]):null,
@@ -130,7 +130,7 @@
    const t=Object.fromEntries(pairs);t.counts=counts;
    if(g!==generation||uid!==user?.id||!live)return;
    if(automatic&&automaticBlocked()){syncPending=true;return;}
-   const next=mapData(t,kind,uid);next.coachSnapshotReady=coachSnapshot!==null;if(kind==='coach')for(const student of next.students){const row=coachSnapshot?.find(x=>x.student_id===student.id);student.sharedSnapshot=row?{age:row.age_years,sex:normalizeSex(row.sex_code),weight:row.weight_kg==null?null:Number(row.weight_kg),height:row.height_cm==null?null:Number(row.height_cm),weightOn:row.weight_on,heightOn:row.height_on}:null;}next.drafts=state.drafts||{};next.readStudentNotices=state.readStudentNotices||{};
+   const next=mapData(t,kind,uid);next.coachSnapshotReady=coachSnapshot!==null;if(kind==='coach')for(const student of next.students){const row=coachSnapshot?.find(x=>x.student_id===student.id);student.sharedSnapshot=row?{age:row.age_years,sex:normalizeSex(row.sex_code),weight:row.weight_kg==null?null:Number(row.weight_kg),height:row.height_cm==null?null:Number(row.height_cm),weightOn:row.weight_on,heightOn:row.height_on}:null;}next.drafts=state.drafts||{};next.readStudentNotices=state.readStudentNotices||{};next.noticeReceipts=t.ent_student_notice_receipts||[];if(kind==='student')next.readStudentNotices[uid]=[...new Set([...(next.readStudentNotices[uid]||[]),...next.noticeReceipts.filter(r=>r.read_at).map(r=>r.notice_id)])];
    next.catalogReady=platform!==null;next.catalogExercises=(platform?.[0]||[]).map(e=>({id:e.id,name:e.name,group:e.muscle_group,video:e.video_url,notes:e.notes,primaryMuscles:e.primary_muscles,secondaryMuscles:e.secondary_muscles,status:e.status}));next.catalogRoutines=platform?.[1]||[];
    next.professional={ready:professional!==null,fees:professional?.ent_student_fees||[],charges:professional?.ent_fee_charges||[],payments:professional?.ent_fee_payments||[],voids:professional?.ent_fee_voids||[],blocks:professional?.ent_training_blocks||[],branding:professional?.ent_coach_branding?.find(b=>b.coach_id===(kind==='coach'?uid:next.coach.id))||null};
    next.payments={ready:paymentOrders!==null,available:paymentAvailable,orders:paymentOrders||[]};
@@ -187,9 +187,9 @@
   }catch(e){if(g===generation)accessPanel('No pudimos cargar tu cuenta',friendly(e),'<button class="access-btn" data-cloud="retry">Reintentar</button><button class="access-text" data-cloud="logout">Salir</button>');}
   finally{if(g===generation)checking=false;}
  }
- async function run(task,message='Cambios guardados.'){
+ async function run(task,message='Cambios guardados.',button){
   if(busy)return false;busy=true;const g=generation;
-  const finishLoading=window.EntrenarLoading?.begin();document.body.classList.add('cloud-busy');
+  const finishLoading=window.EntrenarLoading?.begin(button||undefined);document.body.classList.add('cloud-busy');
   try{await task();if(g!==generation)return false;await refresh();if(g!==generation)return false;if(modal.open)modal.close();if(message)toast(message);return true;}
   catch(e){if(g===generation){const err=$('#form-error');if(err)err.textContent=friendly(e);else toast(friendly(e));}return false;}
   finally{finishLoading?.();busy=false;document.body.classList.remove('cloud-busy');if(syncPending)scheduleSync();}
@@ -238,11 +238,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.16.0 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.16.1 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.16.0</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.16.1</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tu historial de medidas es personal. Tu profesor vinculado puede ver tu último peso y altura.':'Los cambios se guardan en tu cuenta de Entrenar.';
@@ -320,7 +320,7 @@
    if(f.id==='measurement-form'){needRole('student');const m=readMeasurement(data,fid);const x={recorded_on:m.date,weight_kg:m.weight,height_cm:m.height};check(await (fid?client.from('ent_measurements').update(x).eq('id',fid).eq('student_id',user.id):client.from('ent_measurements').insert({...x,student_id:user.id})).select('id').single());}
    if(f.id==='cloud-link'){needRole('student');const code=v('code').toUpperCase(),found=await api.preview(code);pendingCode=code;setTimeout(()=>openModal('¿Es tu profesor?','Revisá el nombre antes de solicitar la vinculación.',`<h3>${esc(found.coach_name)}</h3><form id="cloud-link-confirm">${actions('Solicitar vinculación')}</form>`),0);}
    if(f.id==='cloud-link-confirm'){needRole('student');await rpc('ent_request_membership',{p_code:pendingCode});pendingCode='';}
-  },f.id==='cloud-email'?'Confirmá el cambio desde tus correos.':f.id==='cloud-link'?'':'Cambios guardados.');
+  },f.id==='cloud-email'?'Confirmá el cambio desde tus correos.':f.id==='cloud-link'?'':'Cambios guardados.',f.querySelector('button[type=submit]'));
   return true;
  }
  async function invokeMedia(form){
@@ -329,6 +329,12 @@
   if(data?.error)throw Error(data.error);if(!data?.ok)throw Error('El servidor no confirmó la carga del video. Volvé a intentar.');
  }
  const api={
+  async markStudentNotices(ids,read=false){
+   needRole('student');const uid=user.id,g=generation;
+   for(let i=0;i<ids.length;i+=100)await rpc('ent_mark_student_notices',{p_ids:ids.slice(i,i+100),p_read:!!read});
+   if(g!==generation||uid!==user?.id||!live)return;
+   state.noticeReceipts??=[];for(const id of ids){let r=state.noticeReceipts.find(r=>r.notice_id===id);if(!r){r={notice_id:id,student_id:uid,seen_at:new Date().toISOString(),read_at:null};state.noticeReceipts.push(r);}if(read)r.read_at??=new Date().toISOString();}
+  },
   get subscription(){return subscription?{...subscription}:null;},
   async mercadoPago(body){
    if(!live||!['admin','coach'].includes(myRole))throw Error('Ingresá con tu cuenta');

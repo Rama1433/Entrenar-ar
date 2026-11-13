@@ -1,4 +1,4 @@
-const CACHE='entrenar-v1.16.0';
+const CACHE='entrenar-v1.16.1';
 const ASSETS=['/','/index.html','/styles.css','/app.js','/loading.js','/money-inputs.js','/supabase.vendor.js','/cloud.js','/payments.js','/account-notices.js','/rest-alerts.js','/exercise-media.js','/exercise-wizard.js','/professional.js','/pull-refresh.js','/navigation.js','/admin.js','/qr.js','/access.js','/manifest.webmanifest','/icons/icon-192.png','/icons/icon-512.png','/icons/apple-touch-icon.png','/icons/maskable-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('entrenar-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
