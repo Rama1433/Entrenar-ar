@@ -1,10 +1,10 @@
-# Vista del profesor · V1.14.0
+# Vista del profesor · V1.14.2
 
 ## Activar esta versión
 
 1. Con SQL 14 ya aplicado, abrí Supabase → SQL Editor → New query y ejecutá todo el contenido de `setup/Entrenar_15_Ficha_Alumno.sql`. Copiá el archivo SQL, no este documento.
 2. Subí todos los archivos actualizados del ZIP a GitHub y esperá el despliegue de Vercel.
-3. Cerrá y reabrí la PWA. El pie debe mostrar **V1.14.0**.
+3. Cerrá y reabrí la PWA. El pie debe mostrar **V1.14.2**.
 
 No hace falta volver a desplegar `exercise-media`, crear otro bucket ni cambiar sus claves/permisos. El formulario por pasos también funciona en la demo; la ficha real requiere el SQL 15.
 

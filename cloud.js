@@ -100,9 +100,9 @@
   s.assignments=(t.ent_assignments||[]).map(a=>({id:a.id,studentId:a.student_id,routineId:a.routine_id,membershipId:a.membership_id}));
   s.sessions=(t.ent_sessions||[]).map(x=>({id:x.id,studentId:x.student_id,routineId:x.routine_id,routineName:x.routine_name,durationSeconds:Number.isInteger(x.duration_seconds)?x.duration_seconds:null,completedAt:x.completed_at,date:dateAR(x.completed_at),exercises:x.exercise_log,note:x.note})).sort((a,b)=>b.completedAt.localeCompare(a.completedAt));
   s.measurements=(t.ent_measurements||[]).map(x=>({id:x.id,studentId:x.student_id,date:x.recorded_on,weight:x.weight_kg===null?null:Number(x.weight_kg),height:x.height_cm===null?null:Number(x.height_cm)}));
-  s.notices=(t.ent_student_notices||[]).map(n=>({id:n.id,title:n.title,body:n.body,date:dateAR(n.created_at)})).reverse();
+  s.notices=(t.ent_student_notices||[]).map(n=>({id:n.id,title:n.title,body:n.body,date:dateAR(n.created_at),createdAt:n.created_at})).reverse();
   const recipients=t.ent_announcement_recipients||[];
-  s.coachNotices=(t.ent_announcements||[]).map(n=>({id:n.id,title:n.title,body:n.body,date:dateAR(n.created_at),recipientIds:recipients.filter(r=>r.announcement_id===n.id).map(r=>r.coach_id),audienceLabel:'Profesores seleccionados'})).reverse();
+  s.coachNotices=(t.ent_announcements||[]).map(n=>({id:n.id,title:n.title,body:n.body,date:dateAR(n.created_at),createdAt:n.created_at,recipientIds:recipients.filter(r=>r.announcement_id===n.id).map(r=>r.coach_id),audienceLabel:'Profesores seleccionados'})).reverse();
   s.readCoachNotices=recipients.filter(r=>r.coach_id===uid&&r.read_at).map(r=>r.announcement_id);
   s.adminPayments=(t.ent_payments||[]).map(p=>({id:p.id,coachId:p.coach_id,coachName:p.coach_name,planId:p.plan_id,planName:p.plan_name,amountCents:Number(p.amount_cents),paidAt:p.paid_on,start:p.period_start,end:p.period_end,method:p.method,reference:p.reference,note:p.note,recordedAt:p.recorded_at}));
   return s;
@@ -232,11 +232,11 @@
   document.body.classList.toggle('cloud-live',live);
   if(!live){if($('.demo-strip').textContent.includes('Cuenta conectada')){$('.demo-strip').innerHTML=demoStrip;$('.page-footer').innerHTML=demoFooter;}return;}
   $('#topbar .role-field')?.remove();
-  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.14.0 · Cuenta conectada';
+  const version=$('#sidebar .version');if(version)version.textContent='Versión 1.15.0 · Cuenta conectada';
   $('#topbar .top-actions')?.insertAdjacentHTML('beforeend','<button class="btn outline cloud-exit" data-cloud="ask-logout">Salir</button>');
   for(const el of document.querySelectorAll('#profile-role,#student-select'))el.closest('section.panel')?.remove();
   const strip=$('.demo-strip');if(strip)strip.innerHTML='<span class="status-dot"></span><span>Cuenta conectada · Guardado en línea</span>';
-  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.14.0</span>';
+  $('.page-footer').innerHTML='<span>ENTRENAR · Cada paso cuenta.</span><span>V1.15.0</span>';
   for(const el of main.querySelectorAll('.admin-local-note'))el.remove();
   for(const el of main.querySelectorAll('.note-text')){
    if(/se guardan en este navegador|esta prueba guarda|bloqueo real de acceso/.test(el.textContent.toLowerCase()))el.textContent=el.textContent.startsWith('Estos datos son opcionales')?'Tu historial de medidas es personal. Tu profesor vinculado puede ver tu último peso y altura.':'Los cambios se guardan en tu cuenta de Entrenar.';

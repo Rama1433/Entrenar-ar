@@ -1,4 +1,4 @@
-# Mercado Pago · V1.14.0
+# Mercado Pago · V1.14.2
 
 Incluye Checkout Pro con API de Orders: pago manual de un mes, sin suscripción automática. **El paquete está en modo prueba por defecto.** Guardar credenciales o subir el sitio no activa cobros reales.
 
@@ -9,10 +9,22 @@ Incluye Checkout Pro con API de Orders: pago manual de un mes, sin suscripción 
 3. Crear la función **mercadopago-checkout** desde el editor de Edge Functions. Reemplazar todo su `index.ts` por `setup/mercadopago-checkout/index.ts`. Desactivar **Verify JWT / Enforce JWT Verification**, porque el código valida internamente el token con Supabase Auth y los permisos de la base. Deploy.
 4. Crear **mercadopago-webhook**, reemplazando su `index.ts` por `setup/mercadopago-webhook/index.ts`. Desactivar Verify JWT: Mercado Pago no envía el JWT de Supabase; el código valida la firma HMAC y consulta el pago en su API. Deploy.
 5. Confirmar en Mercado Pago que el webhook de **Prueba**, evento **Order (Mercado Pago)**, apunta a `https://tsmgmsiigkdhrwwkbpyj.supabase.co/functions/v1/mercadopago-webhook`. La firma de ese entorno debe coincidir con el secreto guardado.
-6. Subir los archivos del sitio a GitHub/Vercel, con index.html en la raíz, como en las actualizaciones anteriores. Cerrar y volver a abrir la PWA. Debe mostrar V1.14.0.
-7. Entrar como administrador → Facturación → Mercado Pago → **Probar un pago**. Elegir un profesor que ya exista y escribir el correo de la **cuenta compradora de prueba de Mercado Pago**, no la cuenta real del profesor ni la cuenta vendedora. Si no hay precio en el plan, definirlo primero en Planes y precios.
-8. Abrir Mercado Pago y usar la cuenta/tarjeta de prueba del panel de Developers (titular APRO para probar aprobación). Volver a Entrenar o tocar Consultar estado. La orden aparece como Prueba aprobada. No suma facturación real y no cambia el vencimiento del profesor.
-9. Reenviar la misma notificación desde MP y comprobar que sigue habiendo una sola orden. Para Simular notificación usar el ID ORDTST de una orden realmente creada; un ID inventado no permite verificar un pago.
+6. Subir los archivos del sitio a GitHub/Vercel, con index.html en la raíz, como en las actualizaciones anteriores. Cerrar y volver a abrir la PWA. Debe mostrar V1.14.2.
+**Corrección V1.14.2:** el 401 en avisos automáticos, aun con simulación correcta, requiere comprobar el esquema de firma. La función admite HMAC del ID original (SDK actual) y del ID en minúsculas (otra convención documentada por MP), siempre con la misma clave, el mismo ID y los controles de la orden consultada en la API. No se acepta una firma ausente o falsificada. Para instalar sobre V1.14.0/1.14.1, reemplazar TODO `index.ts` de `mercadopago-webhook` por el de este paquete y desplegar. No ejecutar SQL ni cambiar secretos para esta actualización. Ya no usar la sustitución manual de una línea de la versión anterior.
+
+La función genera un registro `mp_webhook_signature` en Logs, con build 1.14.2, entorno y un código; nunca incluye la clave ni la firma completa:
+- `MP_SIGNATURE_ORIGINAL_OK`: HMAC válido con ID original.
+- `MP_SIGNATURE_LOWERCASE_OK`: HMAC válido con la convención en minúsculas.
+- `MP_HEADERS_MISSING`: falta x-signature o x-request-id (solo muestra presencia, no valores).
+- `MP_FORMAT_INVALID`: formato de ID/encabezado no válido.
+- `MP_SIGNATURE_MISMATCH`: ninguno de los dos HMAC coincide; revisar asociación entre la firma del entorno/app y el secreto almacenado.
+- `MP_SECRET_MISSING`: falta el secreto.
+
+Primero repetir la simulación y después revisar una notificación AUTOMÁTICA nueva (o un reintento). La simulación por sí sola no valida el canal automático. Si el rechazo continúa, copiar solo ese evento de Logs, sin encabezados ni secretos. No deshabilitar la validación de firma.
+
+7. Entrar como administrador → Facturación → Mercado Pago → **Probar un pago**. Elegir un profesor que ya exista y escribir un correo válido para la prueba. No hace falta crear ni iniciar sesión con una cuenta compradora de Mercado Pago. Si no hay precio en el plan, definirlo primero en Planes y precios.
+8. Abrir el enlace de Mercado Pago en una ventana de incógnito, **sin iniciar sesión en Mercado Pago**, y usar la tarjeta de prueba del panel de Developers (titular APRO para probar aprobación). Volver a Entrenar o tocar Consultar estado. La orden aparece como Prueba aprobada. No suma facturación real y no cambia el vencimiento del profesor.
+9. Usar Simular notificación sobre la misma orden y comprobar que sigue habiendo un solo registro. Si el panel ofrece Reenviar, también puede usarse. Para Simular notificación usar el ID ORDTST de una orden realmente creada; un ID inventado no permite verificar un pago.
 
 Los archivos config.toml de ambas carpetas documentan Verify JWT=false para despliegue por CLI. En Dashboard hay que ajustar ese interruptor manualmente. El archivo index.ts de cada función es autónomo: no requiere subir una carpeta compartida.
 
@@ -53,3 +65,8 @@ Fuentes oficiales consultadas (13/11/2026):
 - https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-orders/notifications
 - https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-orders/web-integration/configure-back-urls
 - https://www.mercadopago.com.mx/developers/es/docs/checkout-api-orders/resources/migrate-payments-to-orders
+
+Corrección de firma documentada oficialmente: https://github.com/mercadopago/sdk-nodejs/pull/439
+Prueba sin sesión: https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-orders/integration-test/test-purchase-with-card
+
+Compatibilidad de canonicalización del ID (HMAC válido requerido en ambos casos): https://www.mercadopago.com.ar/developers/es/docs/wallet-connect/notifications

@@ -43,7 +43,7 @@ El enlace de YouTube Shorts sigue disponible como alternativa. Cuando el ejercic
 - Peso y altura: se conservan los límites de carga de hasta 300 kg y 300 cm. No se deducen diagnósticos ni objetivos a partir de esos valores.
 - Si se carga o cambia una medida, se guarda en **Mi progreso**, con la fecha del día. Si ya existe un registro de ese día, se completa/actualiza el mismo, preservando la otra medida cuando no se modifica. Editar solo el nombre o el sexo no crea otro registro de medidas.
 - Dejar la edad vacía la quita del perfil. Dejar peso/altura vacíos no borra su historial; ese historial mantiene la edición por fecha que ya existía.
-- La edad es visible para el alumno y su profesor vinculado en la ficha. Desde V1.14.0 el profesor con vínculo activo puede consultar el último peso y altura con sus fechas en la ficha. El historial completo sigue siendo del alumno; no se amplía el acceso del administrador ni se permite a otros profesores consultar esas medidas.
+- La edad es visible para el alumno y su profesor vinculado en la ficha. Desde V1.14.2 el profesor con vínculo activo puede consultar el último peso y altura con sus fechas en la ficha. El historial completo sigue siendo del alumno; no se amplía el acceso del administrador ni se permite a otros profesores consultar esas medidas.
 
 Durante el registro, los valores opcionales se mantienen para completar el recorrido después de confirmar el correo. Al confirmar y guardarlos se limpian los valores de alta de los metadatos de Auth; el perfil y las medidas son la fuente de datos de la aplicación.
 
