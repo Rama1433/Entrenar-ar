@@ -69,7 +69,7 @@
     event.preventDefault(); event.stopPropagation();
     if (submitting) return; submitting = true;
     const form = event.target, data = new FormData(form), error = root.querySelector('#access-error');
-    const button = form.querySelector('button[type="submit"]'); if (button) button.disabled = true;
+    const button = form.querySelector('button[type="submit"]'); const finishLoading=window.EntrenarLoading?.begin(button); if (button) button.disabled = true;
     try {
       if (form.id === 'access-link') {
         const code = String(data.get('code') || '').trim().toUpperCase();
@@ -91,7 +91,7 @@
         error.textContent = 'Si el correo tiene una cuenta, vas a recibir el enlace. Revisá también el spam.';
       }
     } catch (err) { if (error?.isConnected) error.textContent = window.EntrenarCloud.friendly(err); }
-    finally { submitting = false; if (button?.isConnected) button.disabled = false; }
+    finally { finishLoading?.(); submitting = false; if (button?.isConnected) button.disabled = false; }
   });
   window.EntrenarAccessNavigation = {
     snapshot: () => ({screen: screen === 'pending' ? 'login' : screen, accountRole, chosenPlan, invitationConfirmed, professorName, inviteCode}),

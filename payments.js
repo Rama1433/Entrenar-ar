@@ -25,19 +25,19 @@
  const prior=render;render=function(...args){const value=prior(...args);attach();return value;};
  function testForm(){if(role!=='admin'||!window.EntrenarCloud?.live)return;openModal('Probar Mercado Pago','Abrí el pago en una ventana de incógnito, sin iniciar sesión en Mercado Pago. No modifica planes ni registra ingresos reales.',`<form id="mp-test-form"><label class="field">Profesor<select name="coach" required>${state.adminCoaches.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select></label><label class="field">Correo para la prueba<input name="email" type="email" autocomplete="off" required maxlength="160" placeholder="Un correo electrónico válido"></label><p class="note-text">El precio se toma del plan del profesor. Si todavía no lo definiste, cargalo en Planes y precios.</p><p id="mp-error" role="alert" class="access-error"></p><div class="btns">${button('Cancelar','close')}<button class="btn primary" type="submit">Preparar pago de prueba</button></div></form>`);}
  async function create(coach,email=''){
-  if(pending)return;pending=true;document.body.classList.add('mp-busy');
+  if(pending)return;pending=true;const finishLoading=window.EntrenarLoading?.begin(undefined,'Preparando pago…');document.body.classList.add('mp-busy');
   try{const operation=crypto.randomUUID();const result=await window.EntrenarCloud.mercadoPago({action:'create',coach,test_email:email,operation});
    const u=new URL(result.checkout_url);if(u.origin!=='https://www.mercadopago.com.ar'||!u.pathname.startsWith('/checkout/'))throw Error('El enlace de pago no es válido');
    await window.EntrenarCloud.refresh();
    openModal(result.environment==='test'?'Pago de prueba':'Pagar mi plan','El plan se renueva cuando Mercado Pago confirme el pago.',`<p>${result.environment==='test'?'Estás en modo de prueba. Este pago no modifica vencimientos ni suma facturación.':'Vas a pagar un mes de tu plan de Entrenar. Sin débito automático.'}</p><div class="btns"><a class="btn primary" href="${esc(u.href)}" rel="noreferrer">Abrir Mercado Pago</a>${button('Volver','close')}</div>`);
-  }catch(e){const error=document.getElementById('mp-error');if(error)error.textContent=e.message;else toast(e.message);}finally{pending=false;document.body.classList.remove('mp-busy');}
+  }catch(e){const error=document.getElementById('mp-error');if(error)error.textContent=e.message;else toast(e.message);}finally{finishLoading?.();pending=false;document.body.classList.remove('mp-busy');}
  }
  async function check(id){
-  if(pending||!uuid(id))return;pending=true;const owner=window.EntrenarCloud?.accountId;
+  if(pending||!uuid(id))return;pending=true;const finishLoading=window.EntrenarLoading?.begin(undefined,'Consultando…');const owner=window.EntrenarCloud?.accountId;
   try{const result=await window.EntrenarCloud.mercadoPago({action:'status',id});await window.EntrenarCloud.refresh();if(owner!==window.EntrenarCloud?.accountId)return;
    openModal(result.paid_on?'¡Pago confirmado!':'Estado del pago',result.environment==='test'?'Prueba de Mercado Pago':'Tu abono de Entrenar',`<p>${result.needs_review?'El pago necesita revisión. Conservamos su registro.':result.paid_on?result.environment==='test'?'La prueba fue aprobada. No se modificó ningún plan ni la facturación real.':'Tu pago está confirmado. '+(result.period_end?'Tu plan está vigente hasta el '+esc(result.period_end)+'.':'Estamos revisando la renovación.'):'Todavía no hay un pago aprobado. Podés consultar de nuevo en unos momentos.'}</p><div class="btns">${button('Entendido','close')}${!result.paid_on?button('Consultar de nuevo','status',id):''}</div>`);
    if(returned===id){const url=new URL(location.href);for(const k of ['mp_return','order_id','payment_id','status','collection_id','collection_status','external_reference','payment_type','merchant_order_id','preference_id','site_id','processing_mode','merchant_account_id'])url.searchParams.delete(k);history.replaceState(history.state,'',url);}
-  }catch(e){toast(e.message);}finally{pending=false;}
+  }catch(e){toast(e.message);}finally{finishLoading?.();pending=false;}
  }
  window.addEventListener('click',e=>{const b=e.target.closest('[data-payment]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(!window.EntrenarCloud?.live)return;switch(b.dataset.payment){case 'test':testForm();break;case 'pay':create(b.dataset.id);break;case 'status':check(b.dataset.id);break;case 'close':modal.close();break;case 'more':shown+=5;attach();break;}},true);
  window.addEventListener('submit',e=>{if(e.target.id!=='mp-test-form')return;e.preventDefault();e.stopImmediatePropagation();if(role!=='admin'||!e.target.reportValidity())return;const d=new FormData(e.target);create(d.get('coach'),d.get('email'));},true);

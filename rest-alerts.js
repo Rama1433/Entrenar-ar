@@ -27,7 +27,7 @@
  }
  function paint(){
   document.querySelectorAll('[data-rest-status]').forEach(el=>{el.textContent=message();});
-  document.querySelectorAll('[data-rest-enable]').forEach(el=>{el.disabled=busy||!realStudent()||!config?.enabled||!pushSupported()||ios()&&!installed()||Notification.permission==='denied';el.textContent=busy?'Un momento…':enabled()&&subscriptionId?'Desactivar avisos':'Activar avisos';});
+  document.querySelectorAll('[data-rest-enable]').forEach(el=>{el.disabled=busy||!realStudent()||!config?.enabled||!pushSupported()||ios()&&!installed()||Notification.permission==='denied';if(!el.classList.contains('button-loading'))el.textContent=busy?'Un momento…':enabled()&&subscriptionId?'Desactivar avisos':'Activar avisos';});
   document.querySelectorAll('[data-rest-awake]').forEach(el=>{el.checked=awake();el.disabled=!navigator.wakeLock;});
   document.querySelectorAll('[data-rest-screen]').forEach(el=>{el.textContent=!navigator.wakeLock?'Tu navegador no permite mantener la pantalla encendida.':!awake()?'La pantalla sigue el bloqueo habitual de tu celular.':wake?'Pantalla encendida mientras entrenás.':wakeFailure?'El celular no permitió mantener la pantalla encendida.':'Mantiene la pantalla encendida durante la rutina.';});
   document.querySelectorAll('[data-rest-brief]').forEach(el=>{el.textContent=problem||(!realStudent()||!config?.enabled?'':enabled()&&subscriptionId?'Aviso de descanso activado para este dispositivo.':'Avisos fuera de la app: activalos desde tu perfil.');});
@@ -66,8 +66,8 @@
  }
  async function enable(){
   if(busy||!realStudent()||!config?.enabled)return;
-  if(enabled()&&subscriptionId){busy=true;paint();try{await revoke();put('notifications',false);problem='';}catch{problem='No pudimos desactivar los avisos. Volvé a intentar.';}finally{busy=false;paint();}return;}
-  busy=true;problem='';paint();const e=epoch;
+  if(enabled()&&subscriptionId){busy=true;const finishLoading=window.EntrenarLoading?.begin(undefined,'Desactivando…');paint();try{await revoke();put('notifications',false);problem='';}catch{problem='No pudimos desactivar los avisos. Volvé a intentar.';}finally{busy=false;finishLoading?.();paint();}return;}
+  busy=true;problem='';const finishLoading=window.EntrenarLoading?.begin(undefined,'Activando…');paint();const e=epoch;
   try{
    // El permiso se solicita directamente desde el toque del alumno (necesario en iOS).
    const permission=await Notification.requestPermission();if(e!==epoch)return;
@@ -79,7 +79,7 @@
    if(e!==epoch)return;subscriptionId=registered;put('notifications',true);problem='';
    if(timerEnd>Date.now())start(Math.ceil((timerEnd-Date.now())/1000));
   }catch{if(e===epoch)problem='No pudimos activar los avisos. Revisá tu conexión y volvé a intentar.';}
-  finally{if(e===epoch){busy=false;paint();}}
+  finally{if(e===epoch){busy=false;paint();}finishLoading?.();paint();}
  }
  function serialize(task){queue=queue.catch(()=>{}).then(task).catch(()=>{});return queue;}
  function cancel(){
@@ -109,10 +109,10 @@
  document.addEventListener('click',event=>{if(event.target.closest('[data-rest-enable]'))enable();});
  document.addEventListener('click',async event=>{
   const button=event.target.closest('[data-rest-initialize]');if(!button||button.disabled)return;
-  button.disabled=true;adminStatus='Habilitando…';const label=main.querySelector('[data-rest-admin-status]');if(label)label.textContent=adminStatus;
+  const finishLoading=window.EntrenarLoading?.begin(button,'Habilitando…');button.disabled=true;adminStatus='Habilitando…';const label=main.querySelector('[data-rest-admin-status]');if(label)label.textContent=adminStatus;
   try{await cloud().initializeRestPush();adminStatus='Avisos habilitados. Cada alumno puede activarlos desde su perfil.';button.textContent='Avisos habilitados';}
   catch{adminStatus='Falta configurar el SQL 13 y la función rest-reminders en Supabase. Consultá la guía incluida.';button.disabled=false;}
-  if(label?.isConnected)label.textContent=adminStatus;
+  finishLoading?.();if(adminStatus.startsWith('Avisos habilitados')){button.textContent='Avisos habilitados';button.disabled=true;}if(label?.isConnected)label.textContent=adminStatus;
  });
  document.addEventListener('change',event=>{if(event.target.matches('[data-rest-awake]')){put('awake',event.target.checked);wakeFailure=false;syncWake();}});
  document.addEventListener('visibilitychange',()=>{syncWake();if(!document.hidden){if(timerCompleted&&localRestVisible())cancel();if(realStudent()&&!config?.enabled)refreshConfig();}});

@@ -416,6 +416,12 @@ html:has(body.cloud-live){overscroll-behavior-y:contain}body.cloud-live{overscro
 @media(max-width:600px){.message-floating {right:16px;top:calc(env(safe-area-inset-top,0px) + 82px)}}
 @media(prefers-reduced-motion:reduce){.message-floating {animation:none}}
 
+/* Esperas de operaciones: texto y progreso, sin cambiar el tamaño del botón. */
+button.button-loading {display:inline-flex;align-items:center;justify-content:center;gap:9px;cursor:wait;opacity:1!important;pointer-events:none}
+.button-spinner {display:inline-block;width:15px;height:15px;box-sizing:border-box;flex:0 0 15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:button-spin .7s linear infinite}
+@keyframes button-spin {to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.button-spinner {animation:none;border-style:dotted}}
+
 .cloud-live .demo-strip {
   display: none;
 }

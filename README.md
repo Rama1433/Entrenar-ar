@@ -1,4 +1,6 @@
-# Entrenar · V1.15.1 · Supabase
+# Entrenar · V1.16.0 · Supabase
+
+**V1.16.0:** botones con texto y spinner durante operaciones asíncronas, restauración tras errores y consultas independientes en paralelo para reducir las esperas. Solo actualizar archivos en GitHub, sin SQL nuevo.
 
 **V1.15.1:** flotante sutil «Mensaje nuevo» que desaparece en 4 segundos y no vuelve a anunciar mensajes vistos en la sesión.
 
