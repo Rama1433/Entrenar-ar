@@ -422,6 +422,20 @@ button.button-loading {display:inline-flex;align-items:center;justify-content:ce
 @keyframes button-spin {to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.button-spinner {animation:none;border-style:dotted}}
 
+/* Elegir el plan y continuar desde la misma tarjeta. */
+.visually-hidden {position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.access-trial-callout {display:grid;gap:6px;padding:18px 20px;border-radius:14px;background:#eaf2dc;border:1px solid #d4e2bf;margin:0 0 24px;color:#173b2b}
+.access-trial-callout strong {font-size:20px;letter-spacing:-.3px}
+.access-trial-callout span {font-size:12px;line-height:1.6;max-width:630px}
+.access-screen-plans .access-plan-card:not(.coming-soon) {cursor:pointer}
+.access-screen-plans .access-plan-card:focus-visible {outline:3px solid #87ab57;outline-offset:4px}
+.access-plan-state {font-size:11px;font-weight:600;margin:0 0 14px;line-height:1.5;color:#657a67;min-height:17px}
+.access-plan-card.selected .access-plan-state {color:#d2f580}
+.access-plan-trial {display:inline-block;font-size:12px;font-weight:650;background:#edf2e7;color:#36552b;border-radius:6px;padding:6px 9px;margin:0 0 10px}
+.access-plan-card.selected .access-plan-trial {background:#2d513b;color:#d2f580}
+.access-screen-plans .access-plan-select:focus-visible {outline:3px solid #87ab57;outline-offset:3px}
+@media(max-width:700px){.access-trial-callout {padding:16px;margin-bottom:20px}.access-trial-callout strong {font-size:19px}}
+
 .cloud-live .demo-strip {
   display: none;
 }
