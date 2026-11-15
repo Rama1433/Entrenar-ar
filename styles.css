@@ -436,6 +436,17 @@ button.button-loading {display:inline-flex;align-items:center;justify-content:ce
 .access-screen-plans .access-plan-select:focus-visible {outline:3px solid #87ab57;outline-offset:3px}
 @media(max-width:700px){.access-trial-callout {padding:16px;margin-bottom:20px}.access-trial-callout strong {font-size:19px}}
 
+.access-password-field {position:relative}
+.access-password-field input {padding-right:56px!important}
+.access-password-toggle {position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:#4c6446;cursor:pointer}
+.access-password-toggle svg {width:22px;height:22px;pointer-events:none}
+.access-password-toggle:hover {background:#edf2e7}
+.access-password-toggle:focus-visible {outline:2px solid #517344;outline-offset:1px}
+.access-recovery-status {margin-top:16px;padding:16px;background:#edf2e7;border:1px solid #ccdabe;border-radius:12px;color:#284e36;font-size:13px;line-height:1.6}
+.access-recovery-status[hidden] {display:none}
+.access-recovery-status strong {display:block;font-size:15px;margin-bottom:6px}
+.access-recovery-status p {margin:0}
+
 .cloud-live .demo-strip {
   display: none;
 }
